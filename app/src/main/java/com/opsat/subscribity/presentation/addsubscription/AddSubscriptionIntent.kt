@@ -1,0 +1,17 @@
+package com.opsat.subscribity.presentation.addsubscription
+
+import java.time.LocalDate
+
+sealed interface AddSubscriptionIntent {
+    data class NameChanged(val value: String) : AddSubscriptionIntent
+    data class PriceChanged(val value: String) : AddSubscriptionIntent
+    data class CurrencyQueryChanged(val value: String) : AddSubscriptionIntent
+    data class CurrencySelected(val option: CurrencyOption) : AddSubscriptionIntent
+    data class CurrencyMenuExpandedChanged(val expanded: Boolean) : AddSubscriptionIntent
+    data class PeriodOptionSelected(val option: PeriodOption) : AddSubscriptionIntent
+    data class CustomPeriodDaysChanged(val value: String) : AddSubscriptionIntent
+    data class DateSelected(val date: LocalDate) : AddSubscriptionIntent
+    data class DatePickerVisibilityChanged(val visible: Boolean) : AddSubscriptionIntent
+    data object Save : AddSubscriptionIntent
+    data object Cancel : AddSubscriptionIntent
+}
