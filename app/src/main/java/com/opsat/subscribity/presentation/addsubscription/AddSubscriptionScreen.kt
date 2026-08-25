@@ -46,6 +46,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -115,7 +116,7 @@ fun AddSubscriptionScreen(
                 }
                 Button(
                     onClick = { onIntent(AddSubscriptionIntent.Save) },
-                    enabled = !state.isSaving,
+                    enabled = !state.isSaving && state.customPeriodError == null,
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(if (mode is AddSubscriptionMode.Edit) "Update" else "Save")
@@ -276,15 +277,19 @@ private fun PeriodField(
         }
         if (state.periodOption == PeriodOption.CUSTOM) {
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = state.customPeriodDaysText,
-                onValueChange = { onIntent(AddSubscriptionIntent.CustomPeriodDaysChanged(it)) },
-                label = { Text("Every N days") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                isError = state.customPeriodError != null,
-                supportingText = { state.customPeriodError?.let { Text(it) } },
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = state.customPeriodCountText,
+                    onValueChange = { onIntent(AddSubscriptionIntent.CustomPeriodCountChanged(it)) },
+                    label = { Text("Every") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = state.customPeriodError != null,
+                    supportingText = { state.customPeriodError?.let { Text(it) } },
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                CustomPeriodUnitField(state = state, onIntent = onIntent, modifier = Modifier.weight(1f))
+            }
         }
     }
 }
@@ -295,6 +300,43 @@ private fun PeriodOption.label(): String = when (this) {
     PeriodOption.QUARTERLY -> "Quarterly"
     PeriodOption.YEARLY -> "Yearly"
     PeriodOption.CUSTOM -> "Custom"
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CustomPeriodUnitField(
+    state: AddSubscriptionState,
+    onIntent: (AddSubscriptionIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
+        OutlinedTextField(
+            value = state.customPeriodUnit.label(),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Unit") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            CustomPeriodUnit.entries.forEach { unit ->
+                DropdownMenuItem(
+                    text = { Text(unit.label()) },
+                    onClick = {
+                        onIntent(AddSubscriptionIntent.CustomPeriodUnitSelected(unit))
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
+}
+
+private fun CustomPeriodUnit.label(): String = when (this) {
+    CustomPeriodUnit.DAYS -> "Days"
+    CustomPeriodUnit.WEEKS -> "Weeks"
+    CustomPeriodUnit.MONTHS -> "Months"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

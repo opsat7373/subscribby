@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.opsat.subscribity.domain.model.BillingPeriod
 import com.opsat.subscribity.domain.model.CurrencyCode
+import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import com.opsat.subscribity.domain.model.Subscription
 import com.opsat.subscribity.domain.usecase.AddSubscriptionUseCase
 import com.opsat.subscribity.domain.usecase.DeleteSubscriptionUseCase
@@ -64,7 +65,8 @@ class AddSubscriptionViewModel @Inject constructor(
                             selectedCurrency = options.firstOrNull { opt -> opt.code == existing.currency.code },
                             currencyQuery = existing.currency.code,
                             periodOption = existing.period.toPeriodOption(),
-                            customPeriodDaysText = (existing.period as? BillingPeriod.Custom)?.days?.toString().orEmpty(),
+                            customPeriodCountText = (existing.period as? BillingPeriod.Custom)?.count?.toString().orEmpty(),
+                            customPeriodUnit = (existing.period as? BillingPeriod.Custom)?.unit ?: CustomPeriodUnit.DAYS,
                             nextPaymentDate = existing.nextPaymentDate,
                         )
                     }
@@ -101,12 +103,23 @@ class AddSubscriptionViewModel @Inject constructor(
             is AddSubscriptionIntent.CurrencyMenuExpandedChanged ->
                 _state.update { it.copy(isCurrencyMenuExpanded = intent.expanded) }
 
-            is AddSubscriptionIntent.PeriodOptionSelected ->
-                _state.update { it.copy(periodOption = intent.option, customPeriodError = null) }
-
-            is AddSubscriptionIntent.CustomPeriodDaysChanged -> _state.update {
-                it.copy(customPeriodDaysText = intent.value.filter(Char::isDigit), customPeriodError = null)
+            is AddSubscriptionIntent.PeriodOptionSelected -> _state.update {
+                it.copy(
+                    periodOption = intent.option,
+                    customPeriodError = customPeriodErrorFor(intent.option, it.customPeriodCountText),
+                )
             }
+
+            is AddSubscriptionIntent.CustomPeriodCountChanged -> _state.update {
+                val filtered = intent.value.filter(Char::isDigit)
+                it.copy(
+                    customPeriodCountText = filtered,
+                    customPeriodError = customPeriodErrorFor(it.periodOption, filtered),
+                )
+            }
+
+            is AddSubscriptionIntent.CustomPeriodUnitSelected ->
+                _state.update { it.copy(customPeriodUnit = intent.unit) }
 
             is AddSubscriptionIntent.DateSelected ->
                 _state.update { it.copy(nextPaymentDate = intent.date, isDatePickerVisible = false) }
@@ -168,15 +181,11 @@ class AddSubscriptionViewModel @Inject constructor(
     private fun buildValidSubscriptionOrNull(): Subscription? {
         val current = _state.value
         val price = current.priceText.toBigDecimalOrNull()
-        val customDays = current.customPeriodDaysText.toIntOrNull()
+        val customCount = current.customPeriodCountText.toIntOrNull()
 
         val nameError = if (current.name.isBlank()) "Name is required" else null
         val priceError = if (price == null || price < BigDecimal.ZERO) "Enter a valid price" else null
-        val customPeriodError = if (current.periodOption == PeriodOption.CUSTOM && (customDays == null || customDays <= 0)) {
-            "Enter a number of days"
-        } else {
-            null
-        }
+        val customPeriodError = customPeriodErrorFor(current.periodOption, current.customPeriodCountText)
 
         if (nameError != null || priceError != null || customPeriodError != null) {
             _state.update { it.copy(nameError = nameError, priceError = priceError, customPeriodError = customPeriodError) }
@@ -189,11 +198,17 @@ class AddSubscriptionViewModel @Inject constructor(
             id = existingId,
             name = current.name.trim(),
             icon = current.name.trim(),
-            period = current.periodOption.toBillingPeriod(customDays),
+            period = current.periodOption.toBillingPeriod(customCount, current.customPeriodUnit),
             price = requireNotNull(price),
             currency = CurrencyCode(currency.code),
             nextPaymentDate = current.nextPaymentDate,
         )
+    }
+
+    private fun customPeriodErrorFor(period: PeriodOption, countText: String): String? {
+        if (period != PeriodOption.CUSTOM) return null
+        val count = countText.toIntOrNull()
+        return if (count == null || count <= 0) "Enter a number greater than 0" else null
     }
 
     private fun navigateBack() {
@@ -215,12 +230,12 @@ class AddSubscriptionViewModel @Inject constructor(
     }
 }
 
-private fun PeriodOption.toBillingPeriod(customDays: Int?): BillingPeriod = when (this) {
+private fun PeriodOption.toBillingPeriod(customCount: Int?, customUnit: CustomPeriodUnit): BillingPeriod = when (this) {
     PeriodOption.WEEKLY -> BillingPeriod.Weekly
     PeriodOption.MONTHLY -> BillingPeriod.Monthly
     PeriodOption.QUARTERLY -> BillingPeriod.Quarterly
     PeriodOption.YEARLY -> BillingPeriod.Yearly
-    PeriodOption.CUSTOM -> BillingPeriod.Custom(requireNotNull(customDays))
+    PeriodOption.CUSTOM -> BillingPeriod.Custom(count = requireNotNull(customCount), unit = customUnit)
 }
 
 private fun BillingPeriod.toPeriodOption(): PeriodOption = when (this) {

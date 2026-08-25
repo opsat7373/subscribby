@@ -3,6 +3,7 @@ package com.opsat.subscribity.presentation.addsubscription
 import androidx.lifecycle.SavedStateHandle
 import com.opsat.subscribity.data.seed.SubscriptionSeedData
 import com.opsat.subscribity.domain.model.BillingPeriod
+import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import com.opsat.subscribity.domain.usecase.AddSubscriptionUseCase
 import com.opsat.subscribity.domain.usecase.DeleteSubscriptionUseCase
 import com.opsat.subscribity.domain.usecase.EditSubscriptionUseCase
@@ -132,22 +133,26 @@ class AddSubscriptionViewModelTest {
     }
 
     @Test
-    fun `custom period is resolved from the days field`() = runTest {
+    fun `custom period is resolved from the count and unit fields`() = runTest {
         val viewModel = createViewModel()
         dispatcher.scheduler.advanceUntilIdle()
 
         viewModel.onIntent(AddSubscriptionIntent.NameChanged("Gym"))
         viewModel.onIntent(AddSubscriptionIntent.PriceChanged("40"))
         viewModel.onIntent(AddSubscriptionIntent.PeriodOptionSelected(PeriodOption.CUSTOM))
-        viewModel.onIntent(AddSubscriptionIntent.CustomPeriodDaysChanged("45"))
+        viewModel.onIntent(AddSubscriptionIntent.CustomPeriodCountChanged("45"))
+        viewModel.onIntent(AddSubscriptionIntent.CustomPeriodUnitSelected(CustomPeriodUnit.WEEKS))
         viewModel.onIntent(AddSubscriptionIntent.Save)
         dispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals(BillingPeriod.Custom(45), repository.addedSubscriptions.single().period)
+        assertEquals(
+            BillingPeriod.Custom(45, CustomPeriodUnit.WEEKS),
+            repository.addedSubscriptions.single().period,
+        )
     }
 
     @Test
-    fun `custom period without a day count sets an error and does not persist`() = runTest {
+    fun `custom period without a count sets an error and does not persist`() = runTest {
         val viewModel = createViewModel()
         dispatcher.scheduler.advanceUntilIdle()
 
@@ -157,8 +162,30 @@ class AddSubscriptionViewModelTest {
         viewModel.onIntent(AddSubscriptionIntent.Save)
         dispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals("Enter a number of days", viewModel.state.value.customPeriodError)
+        assertEquals("Enter a number greater than 0", viewModel.state.value.customPeriodError)
         assertTrue(repository.addedSubscriptions.isEmpty())
+    }
+
+    @Test
+    fun `custom period error appears immediately when a zero count is typed, without saving`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.PeriodOptionSelected(PeriodOption.CUSTOM))
+        viewModel.onIntent(AddSubscriptionIntent.CustomPeriodCountChanged("0"))
+
+        assertEquals("Enter a number greater than 0", viewModel.state.value.customPeriodError)
+    }
+
+    @Test
+    fun `custom period error clears once a valid count is typed`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.PeriodOptionSelected(PeriodOption.CUSTOM))
+        viewModel.onIntent(AddSubscriptionIntent.CustomPeriodCountChanged("3"))
+
+        assertEquals(null, viewModel.state.value.customPeriodError)
     }
 
     @Test
@@ -178,14 +205,15 @@ class AddSubscriptionViewModelTest {
     }
 
     @Test
-    fun `editing a custom-period subscription pre-fills the days field`() = runTest {
+    fun `editing a custom-period subscription pre-fills the count and unit fields`() = runTest {
         repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
         val gym = SubscriptionSeedData.subscriptions.first { it.period is BillingPeriod.Custom }
         val viewModel = createViewModel(editingId = gym.id)
         dispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(PeriodOption.CUSTOM, viewModel.state.value.periodOption)
-        assertEquals("45", viewModel.state.value.customPeriodDaysText)
+        assertEquals("45", viewModel.state.value.customPeriodCountText)
+        assertEquals(CustomPeriodUnit.DAYS, viewModel.state.value.customPeriodUnit)
     }
 
     @Test

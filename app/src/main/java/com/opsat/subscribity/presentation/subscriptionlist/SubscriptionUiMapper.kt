@@ -3,6 +3,7 @@ package com.opsat.subscribity.presentation.subscriptionlist
 import com.opsat.subscribity.domain.model.BillingPeriod
 import com.opsat.subscribity.domain.model.CurrencyCode
 import com.opsat.subscribity.domain.model.Subscription
+import com.opsat.subscribity.presentation.common.customPeriodText
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.format.DateTimeFormatter
@@ -32,5 +33,5 @@ private fun BillingPeriod.toLabel(): String = when (this) {
     BillingPeriod.Monthly -> "Monthly"
     BillingPeriod.Quarterly -> "Quarterly"
     BillingPeriod.Yearly -> "Yearly"
-    is BillingPeriod.Custom -> "Every $days days"
+    is BillingPeriod.Custom -> customPeriodText(count, unit)
 }

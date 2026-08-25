@@ -1,5 +1,6 @@
 package com.opsat.subscribity.presentation.addsubscription
 
+import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import java.time.LocalDate
 
 sealed interface AddSubscriptionIntent {
@@ -9,7 +10,8 @@ sealed interface AddSubscriptionIntent {
     data class CurrencySelected(val option: CurrencyOption) : AddSubscriptionIntent
     data class CurrencyMenuExpandedChanged(val expanded: Boolean) : AddSubscriptionIntent
     data class PeriodOptionSelected(val option: PeriodOption) : AddSubscriptionIntent
-    data class CustomPeriodDaysChanged(val value: String) : AddSubscriptionIntent
+    data class CustomPeriodCountChanged(val value: String) : AddSubscriptionIntent
+    data class CustomPeriodUnitSelected(val unit: CustomPeriodUnit) : AddSubscriptionIntent
     data class DateSelected(val date: LocalDate) : AddSubscriptionIntent
     data class DatePickerVisibilityChanged(val visible: Boolean) : AddSubscriptionIntent
     data object Save : AddSubscriptionIntent

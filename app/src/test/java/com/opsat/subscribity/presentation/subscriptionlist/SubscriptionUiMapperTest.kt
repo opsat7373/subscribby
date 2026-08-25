@@ -2,6 +2,7 @@ package com.opsat.subscribity.presentation.subscriptionlist
 
 import com.opsat.subscribity.domain.model.BillingPeriod
 import com.opsat.subscribity.domain.model.CurrencyCode
+import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import com.opsat.subscribity.domain.model.Subscription
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -54,6 +55,37 @@ class SubscriptionUiMapperTest {
         assertEquals("Monthly", subscription(period = BillingPeriod.Monthly).toUiModel().periodLabel)
         assertEquals("Quarterly", subscription(period = BillingPeriod.Quarterly).toUiModel().periodLabel)
         assertEquals("Yearly", subscription(period = BillingPeriod.Yearly).toUiModel().periodLabel)
-        assertEquals("Every 45 days", subscription(period = BillingPeriod.Custom(45)).toUiModel().periodLabel)
+        assertEquals(
+            "Every 45 days",
+            subscription(period = BillingPeriod.Custom(45, CustomPeriodUnit.DAYS)).toUiModel().periodLabel,
+        )
+    }
+
+    @Test
+    fun `custom period omits the count when it is 1 and uses the singular unit word`() {
+        assertEquals(
+            "Every day",
+            subscription(period = BillingPeriod.Custom(1, CustomPeriodUnit.DAYS)).toUiModel().periodLabel,
+        )
+        assertEquals(
+            "Every week",
+            subscription(period = BillingPeriod.Custom(1, CustomPeriodUnit.WEEKS)).toUiModel().periodLabel,
+        )
+        assertEquals(
+            "Every month",
+            subscription(period = BillingPeriod.Custom(1, CustomPeriodUnit.MONTHS)).toUiModel().periodLabel,
+        )
+    }
+
+    @Test
+    fun `custom period pluralizes weeks and months for counts greater than 1`() {
+        assertEquals(
+            "Every 2 weeks",
+            subscription(period = BillingPeriod.Custom(2, CustomPeriodUnit.WEEKS)).toUiModel().periodLabel,
+        )
+        assertEquals(
+            "Every 6 months",
+            subscription(period = BillingPeriod.Custom(6, CustomPeriodUnit.MONTHS)).toUiModel().periodLabel,
+        )
     }
 }

@@ -1,5 +1,6 @@
 package com.opsat.subscribity.presentation.addsubscription
 
+import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import java.time.LocalDate
 
 enum class PeriodOption { WEEKLY, MONTHLY, QUARTERLY, YEARLY, CUSTOM }
@@ -23,7 +24,8 @@ data class AddSubscriptionState(
     val allCurrencyOptions: List<CurrencyOption> = emptyList(),
     val filteredCurrencyOptions: List<CurrencyOption> = emptyList(),
     val periodOption: PeriodOption = PeriodOption.MONTHLY,
-    val customPeriodDaysText: String = "",
+    val customPeriodCountText: String = "",
+    val customPeriodUnit: CustomPeriodUnit = CustomPeriodUnit.DAYS,
     val customPeriodError: String? = null,
     val nextPaymentDate: LocalDate = LocalDate.now(),
     val isDatePickerVisible: Boolean = false,
