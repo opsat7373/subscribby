@@ -2,6 +2,7 @@ package com.opsat.subscribity.presentation.subscriptionlist
 
 import com.opsat.subscribity.data.seed.SubscriptionSeedData
 import com.opsat.subscribity.domain.usecase.ObserveSubscriptionsUseCase
+import com.opsat.subscribity.testing.FakeSubscriptionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
