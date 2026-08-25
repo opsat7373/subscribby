@@ -2,6 +2,7 @@ package com.opsat.subscribity.data.seed
 
 import com.opsat.subscribity.domain.model.BillingPeriod
 import com.opsat.subscribity.domain.model.CurrencyCode
+import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import com.opsat.subscribity.domain.model.Subscription
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -50,7 +51,7 @@ object SubscriptionSeedData {
             id = 4L,
             name = "Спортзал",
             icon = "gym",
-            period = BillingPeriod.Custom(45),
+            period = BillingPeriod.Custom(count = 45, unit = CustomPeriodUnit.DAYS),
             price = BigDecimal("1200"),
             currency = CurrencyCode("UAH"),
             nextPaymentDate = LocalDate.now().plusDays(20),

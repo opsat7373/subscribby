@@ -1,8 +1,11 @@
 package com.opsat.subscribity.presentation.addsubscription
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import com.opsat.subscribity.presentation.theme.SubscribityTheme
 import org.junit.Rule
 import org.junit.Test
@@ -41,8 +44,11 @@ class AddSubscriptionScreenTest {
     }
 
     @Test
-    fun customPeriodShowsDaysField() {
-        val state = AddSubscriptionState(periodOption = PeriodOption.CUSTOM)
+    fun customPeriodShowsCountAndUnitFields() {
+        val state = AddSubscriptionState(
+            periodOption = PeriodOption.CUSTOM,
+            customPeriodUnit = CustomPeriodUnit.WEEKS,
+        )
 
         composeTestRule.setContent {
             SubscribityTheme {
@@ -50,7 +56,41 @@ class AddSubscriptionScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Every N days").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Every").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Weeks").assertIsDisplayed()
+    }
+
+    @Test
+    fun saveIsDisabledWhenCustomPeriodCountIsInvalid() {
+        val state = AddSubscriptionState(
+            periodOption = PeriodOption.CUSTOM,
+            customPeriodError = "Enter a number greater than 0",
+        )
+
+        composeTestRule.setContent {
+            SubscribityTheme {
+                AddSubscriptionScreen(state = state, onIntent = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("Enter a number greater than 0").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Save").assertIsNotEnabled()
+    }
+
+    @Test
+    fun saveIsEnabledWhenCustomPeriodCountIsValid() {
+        val state = AddSubscriptionState(
+            periodOption = PeriodOption.CUSTOM,
+            customPeriodCountText = "3",
+        )
+
+        composeTestRule.setContent {
+            SubscribityTheme {
+                AddSubscriptionScreen(state = state, onIntent = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("Save").assertIsEnabled()
     }
 
     @Test
