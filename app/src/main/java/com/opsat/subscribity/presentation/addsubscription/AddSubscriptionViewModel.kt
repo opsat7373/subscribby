@@ -68,6 +68,16 @@ class AddSubscriptionViewModel @Inject constructor(
                             customPeriodCountText = (existing.period as? BillingPeriod.Custom)?.count?.toString().orEmpty(),
                             customPeriodUnit = (existing.period as? BillingPeriod.Custom)?.unit ?: CustomPeriodUnit.DAYS,
                             nextPaymentDate = existing.nextPaymentDate,
+                            isTrial = existing.isTrial,
+                            trialPeriodCountText = (existing.trialPeriod as? BillingPeriod.Custom)?.count?.toString().orEmpty(),
+                            trialPeriodUnit = (existing.trialPeriod as? BillingPeriod.Custom)?.unit ?: CustomPeriodUnit.DAYS,
+                            trialPeriodError = if (existing.isTrial) {
+                                trialPeriodErrorFor((existing.trialPeriod as? BillingPeriod.Custom)?.count?.toString().orEmpty())
+                            } else {
+                                null
+                            },
+                            trialPriceText = existing.trialPrice?.toPlainString() ?: "0",
+                            trialPriceError = if (existing.isTrial) trialPriceErrorFor(existing.trialPrice?.toPlainString() ?: "0") else null,
                         )
                     }
                 }
@@ -126,6 +136,33 @@ class AddSubscriptionViewModel @Inject constructor(
 
             is AddSubscriptionIntent.DatePickerVisibilityChanged ->
                 _state.update { it.copy(isDatePickerVisible = intent.visible) }
+
+            is AddSubscriptionIntent.TrialToggled -> _state.update {
+                it.copy(
+                    isTrial = intent.enabled,
+                    trialPeriodError = if (intent.enabled) trialPeriodErrorFor(it.trialPeriodCountText) else null,
+                    trialPriceError = if (intent.enabled) trialPriceErrorFor(it.trialPriceText) else null,
+                )
+            }
+
+            is AddSubscriptionIntent.TrialPeriodCountChanged -> _state.update {
+                val filtered = intent.value.filter(Char::isDigit)
+                it.copy(
+                    trialPeriodCountText = filtered,
+                    trialPeriodError = if (it.isTrial) trialPeriodErrorFor(filtered) else null,
+                )
+            }
+
+            is AddSubscriptionIntent.TrialPeriodUnitSelected ->
+                _state.update { it.copy(trialPeriodUnit = intent.unit) }
+
+            is AddSubscriptionIntent.TrialPriceChanged -> _state.update {
+                val sanitized = sanitizePriceInput(intent.value)
+                it.copy(
+                    trialPriceText = sanitized,
+                    trialPriceError = if (it.isTrial) trialPriceErrorFor(sanitized) else null,
+                )
+            }
 
             AddSubscriptionIntent.Cancel -> navigateBack()
 
@@ -186,9 +223,21 @@ class AddSubscriptionViewModel @Inject constructor(
         val nameError = if (current.name.isBlank()) "Name is required" else null
         val priceError = if (price == null || price < BigDecimal.ZERO) "Enter a valid price" else null
         val customPeriodError = customPeriodErrorFor(current.periodOption, current.customPeriodCountText)
+        val trialPeriodError = if (current.isTrial) trialPeriodErrorFor(current.trialPeriodCountText) else null
+        val trialPriceError = if (current.isTrial) trialPriceErrorFor(current.trialPriceText) else null
 
-        if (nameError != null || priceError != null || customPeriodError != null) {
-            _state.update { it.copy(nameError = nameError, priceError = priceError, customPeriodError = customPeriodError) }
+        if (nameError != null || priceError != null || customPeriodError != null ||
+            trialPeriodError != null || trialPriceError != null
+        ) {
+            _state.update {
+                it.copy(
+                    nameError = nameError,
+                    priceError = priceError,
+                    customPeriodError = customPeriodError,
+                    trialPeriodError = trialPeriodError,
+                    trialPriceError = trialPriceError,
+                )
+            }
             return null
         }
 
@@ -202,6 +251,13 @@ class AddSubscriptionViewModel @Inject constructor(
             price = requireNotNull(price),
             currency = CurrencyCode(currency.code),
             nextPaymentDate = current.nextPaymentDate,
+            isTrial = current.isTrial,
+            trialPeriod = if (current.isTrial) {
+                BillingPeriod.Custom(count = requireNotNull(current.trialPeriodCountText.toIntOrNull()), unit = current.trialPeriodUnit)
+            } else {
+                null
+            },
+            trialPrice = if (current.isTrial) current.trialPriceText.toBigDecimalOrNull() else null,
         )
     }
 
@@ -209,6 +265,16 @@ class AddSubscriptionViewModel @Inject constructor(
         if (period != PeriodOption.CUSTOM) return null
         val count = countText.toIntOrNull()
         return if (count == null || count <= 0) "Enter a number greater than 0" else null
+    }
+
+    private fun trialPeriodErrorFor(countText: String): String? {
+        val count = countText.toIntOrNull()
+        return if (count == null || count <= 0) "Enter a number greater than 0" else null
+    }
+
+    private fun trialPriceErrorFor(priceText: String): String? {
+        val price = priceText.toBigDecimalOrNull()
+        return if (price == null || price < BigDecimal.ZERO) "Enter a valid price" else null
     }
 
     private fun navigateBack() {

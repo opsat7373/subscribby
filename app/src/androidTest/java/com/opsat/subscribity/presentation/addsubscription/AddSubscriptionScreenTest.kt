@@ -9,6 +9,9 @@ import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import com.opsat.subscribity.presentation.theme.SubscribityTheme
 import org.junit.Rule
 import org.junit.Test
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 class AddSubscriptionScreenTest {
 
@@ -91,6 +94,67 @@ class AddSubscriptionScreenTest {
         }
 
         composeTestRule.onNodeWithText("Save").assertIsEnabled()
+    }
+
+    @Test
+    fun trialFieldsAreHiddenWhenTheSwitchIsOff() {
+        composeTestRule.setContent {
+            SubscribityTheme {
+                AddSubscriptionScreen(state = AddSubscriptionState(isTrial = false), onIntent = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("Free trial").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Trial price").assertDoesNotExist()
+    }
+
+    @Test
+    fun trialFieldsAreShownWhenTheSwitchIsOn() {
+        val state = AddSubscriptionState(isTrial = true, trialPeriodUnit = CustomPeriodUnit.WEEKS)
+
+        composeTestRule.setContent {
+            SubscribityTheme {
+                AddSubscriptionScreen(state = state, onIntent = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("Trial price").assertIsDisplayed()
+    }
+
+    @Test
+    fun firstChargeLabelReflectsTheStartDatePlusTrialLength() {
+        val startDate = LocalDate.of(2026, 9, 1)
+        val state = AddSubscriptionState(
+            isTrial = true,
+            nextPaymentDate = startDate,
+            trialPeriodCountText = "14",
+            trialPeriodUnit = CustomPeriodUnit.DAYS,
+        )
+
+        composeTestRule.setContent {
+            SubscribityTheme {
+                AddSubscriptionScreen(state = state, onIntent = {})
+            }
+        }
+
+        val expectedDate = startDate.plusDays(14).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+        composeTestRule.onNodeWithText("First charge on $expectedDate").assertIsDisplayed()
+    }
+
+    @Test
+    fun saveIsDisabledWhenTrialCountIsInvalid() {
+        val state = AddSubscriptionState(
+            isTrial = true,
+            trialPeriodError = "Enter a number greater than 0",
+        )
+
+        composeTestRule.setContent {
+            SubscribityTheme {
+                AddSubscriptionScreen(state = state, onIntent = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("Save").assertIsNotEnabled()
     }
 
     @Test

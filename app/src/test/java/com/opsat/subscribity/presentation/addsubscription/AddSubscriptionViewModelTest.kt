@@ -189,6 +189,79 @@ class AddSubscriptionViewModelTest {
     }
 
     @Test
+    fun `trial with an empty count blocks save with an error and does not crash`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.NameChanged("Netflix"))
+        viewModel.onIntent(AddSubscriptionIntent.PriceChanged("15.99"))
+        viewModel.onIntent(AddSubscriptionIntent.TrialToggled(true))
+        viewModel.onIntent(AddSubscriptionIntent.Save)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals("Enter a number greater than 0", viewModel.state.value.trialPeriodError)
+        assertTrue(repository.addedSubscriptions.isEmpty())
+    }
+
+    @Test
+    fun `trial with an empty price blocks save with an error`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.NameChanged("Netflix"))
+        viewModel.onIntent(AddSubscriptionIntent.PriceChanged("15.99"))
+        viewModel.onIntent(AddSubscriptionIntent.TrialToggled(true))
+        viewModel.onIntent(AddSubscriptionIntent.TrialPeriodCountChanged("7"))
+        viewModel.onIntent(AddSubscriptionIntent.TrialPriceChanged(""))
+        viewModel.onIntent(AddSubscriptionIntent.Save)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals("Enter a valid price", viewModel.state.value.trialPriceError)
+        assertTrue(repository.addedSubscriptions.isEmpty())
+    }
+
+    @Test
+    fun `a valid trial round-trips into the saved subscription`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.NameChanged("Netflix"))
+        viewModel.onIntent(AddSubscriptionIntent.PriceChanged("15.99"))
+        viewModel.onIntent(AddSubscriptionIntent.CurrencySelected(CurrencyOption("USD", "US Dollar")))
+        viewModel.onIntent(AddSubscriptionIntent.TrialToggled(true))
+        viewModel.onIntent(AddSubscriptionIntent.TrialPeriodCountChanged("14"))
+        viewModel.onIntent(AddSubscriptionIntent.TrialPeriodUnitSelected(CustomPeriodUnit.DAYS))
+        viewModel.onIntent(AddSubscriptionIntent.TrialPriceChanged("2.50"))
+        viewModel.onIntent(AddSubscriptionIntent.Save)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val saved = repository.addedSubscriptions.single()
+        assertTrue(saved.isTrial)
+        assertEquals(BillingPeriod.Custom(14, CustomPeriodUnit.DAYS), saved.trialPeriod)
+        assertEquals(BigDecimal("2.50"), saved.trialPrice)
+    }
+
+    @Test
+    fun `toggling trial off before saving persists no trial data even with stale field text`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.NameChanged("Netflix"))
+        viewModel.onIntent(AddSubscriptionIntent.PriceChanged("15.99"))
+        viewModel.onIntent(AddSubscriptionIntent.CurrencySelected(CurrencyOption("USD", "US Dollar")))
+        viewModel.onIntent(AddSubscriptionIntent.TrialToggled(true))
+        viewModel.onIntent(AddSubscriptionIntent.TrialPeriodCountChanged("14"))
+        viewModel.onIntent(AddSubscriptionIntent.TrialToggled(false))
+        viewModel.onIntent(AddSubscriptionIntent.Save)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val saved = repository.addedSubscriptions.single()
+        assertFalse(saved.isTrial)
+        assertEquals(null, saved.trialPeriod)
+        assertEquals(null, saved.trialPrice)
+    }
+
+    @Test
     fun `editing an existing subscription pre-fills the form`() = runTest {
         repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
         val netflix = SubscriptionSeedData.subscriptions.first()
@@ -214,6 +287,22 @@ class AddSubscriptionViewModelTest {
         assertEquals(PeriodOption.CUSTOM, viewModel.state.value.periodOption)
         assertEquals("45", viewModel.state.value.customPeriodCountText)
         assertEquals(CustomPeriodUnit.DAYS, viewModel.state.value.customPeriodUnit)
+    }
+
+    @Test
+    fun `editing the seeded trial subscription pre-fills the trial fields`() = runTest {
+        repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
+        val spotify = SubscriptionSeedData.subscriptions.first { it.isTrial }
+        val viewModel = createViewModel(editingId = spotify.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertTrue(state.isTrial)
+        assertEquals(spotify.trialPrice?.toPlainString(), state.trialPriceText)
+        // Spotify's seeded trialPeriod is BillingPeriod.Weekly, which the count+unit trial UI can't
+        // represent (only BillingPeriod.Custom round-trips) — the pre-fill must surface that as a
+        // live error rather than silently leaving Update enabled with an empty count field.
+        assertEquals("Enter a number greater than 0", state.trialPeriodError)
     }
 
     @Test

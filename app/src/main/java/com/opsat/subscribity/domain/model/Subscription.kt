@@ -30,6 +30,9 @@ data class Subscription(
             require(trialPrice != null && trialPrice >= BigDecimal.ZERO) {
                 "trialPrice must be set and non-negative when isTrial is true"
             }
+        } else {
+            require(trialPeriod == null) { "trialPeriod must be null when isTrial is false" }
+            require(trialPrice == null) { "trialPrice must be null when isTrial is false" }
         }
         require(personsCount >= 1) { "personsCount must be at least 1" }
         if (isSharedWithOthers) {
