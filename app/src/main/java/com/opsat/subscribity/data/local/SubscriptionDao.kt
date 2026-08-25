@@ -17,6 +17,9 @@ interface SubscriptionDao {
     @Insert
     suspend fun insert(entity: SubscriptionEntity): Long
 
+    @Insert
+    suspend fun insertAll(entities: List<SubscriptionEntity>)
+
     @Update
     suspend fun update(entity: SubscriptionEntity)
 }
