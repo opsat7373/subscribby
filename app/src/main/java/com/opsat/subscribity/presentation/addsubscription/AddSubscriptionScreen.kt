@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -41,12 +42,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.opsat.subscribity.domain.model.BillingPeriod
 import com.opsat.subscribity.domain.model.CustomPeriodUnit
+import com.opsat.subscribity.domain.model.plus
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -116,7 +120,8 @@ fun AddSubscriptionScreen(
                 }
                 Button(
                     onClick = { onIntent(AddSubscriptionIntent.Save) },
-                    enabled = !state.isSaving && state.customPeriodError == null,
+                    enabled = !state.isSaving && state.customPeriodError == null &&
+                        state.trialPeriodError == null && state.trialPriceError == null,
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(if (mode is AddSubscriptionMode.Edit) "Update" else "Save")
@@ -156,6 +161,8 @@ fun AddSubscriptionScreen(
             PeriodField(state = state, onIntent = onIntent)
             Spacer(modifier = Modifier.height(16.dp))
             DateField(state = state, onIntent = onIntent)
+            Spacer(modifier = Modifier.height(16.dp))
+            TrialSection(state = state, onIntent = onIntent)
             if (mode is AddSubscriptionMode.Edit) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
@@ -288,7 +295,11 @@ private fun PeriodField(
                     modifier = Modifier.weight(1f),
                 )
                 Spacer(modifier = Modifier.width(12.dp))
-                CustomPeriodUnitField(state = state, onIntent = onIntent, modifier = Modifier.weight(1f))
+                PeriodUnitField(
+                    selectedUnit = state.customPeriodUnit,
+                    onUnitSelected = { onIntent(AddSubscriptionIntent.CustomPeriodUnitSelected(it)) },
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
     }
@@ -304,15 +315,15 @@ private fun PeriodOption.label(): String = when (this) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CustomPeriodUnitField(
-    state: AddSubscriptionState,
-    onIntent: (AddSubscriptionIntent) -> Unit,
+private fun PeriodUnitField(
+    selectedUnit: CustomPeriodUnit,
+    onUnitSelected: (CustomPeriodUnit) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
         OutlinedTextField(
-            value = state.customPeriodUnit.label(),
+            value = selectedUnit.label(),
             onValueChange = {},
             readOnly = true,
             label = { Text("Unit") },
@@ -324,7 +335,7 @@ private fun CustomPeriodUnitField(
                 DropdownMenuItem(
                     text = { Text(unit.label()) },
                     onClick = {
-                        onIntent(AddSubscriptionIntent.CustomPeriodUnitSelected(unit))
+                        onUnitSelected(unit)
                         expanded = false
                     },
                 )
@@ -359,7 +370,7 @@ private fun DateField(
         value = state.nextPaymentDate.format(dateFormatter),
         onValueChange = {},
         readOnly = true,
-        label = { Text("Next payment date") },
+        label = { Text(if (state.isTrial) "Trial start date" else "Next payment date") },
         interactionSource = interactionSource,
         modifier = modifier.fillMaxWidth(),
     )
@@ -396,3 +407,62 @@ private fun DateField(
 private fun LocalDate.toEpochMilliUtc(): Long = atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 
 private fun Long.toLocalDateUtc(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate()
+
+@Composable
+private fun TrialSection(
+    state: AddSubscriptionState,
+    onIntent: (AddSubscriptionIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Free trial", modifier = Modifier.weight(1f))
+            Switch(
+                checked = state.isTrial,
+                onCheckedChange = { onIntent(AddSubscriptionIntent.TrialToggled(it)) },
+            )
+        }
+        if (state.isTrial) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = state.trialPeriodCountText,
+                    onValueChange = { onIntent(AddSubscriptionIntent.TrialPeriodCountChanged(it)) },
+                    label = { Text("Every") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = state.trialPeriodError != null,
+                    supportingText = { state.trialPeriodError?.let { Text(it) } },
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                PeriodUnitField(
+                    selectedUnit = state.trialPeriodUnit,
+                    onUnitSelected = { onIntent(AddSubscriptionIntent.TrialPeriodUnitSelected(it)) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = state.trialPriceText,
+                onValueChange = { onIntent(AddSubscriptionIntent.TrialPriceChanged(it)) },
+                label = { Text("Trial price") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                isError = state.trialPriceError != null,
+                supportingText = { state.trialPriceError?.let { Text(it) } },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            val trialCount = state.trialPeriodCountText.toIntOrNull()
+            if (trialCount != null && trialCount > 0) {
+                Spacer(modifier = Modifier.height(8.dp))
+                val firstCharge = state.nextPaymentDate.plus(BillingPeriod.Custom(trialCount, state.trialPeriodUnit))
+                Text(
+                    "First charge on ${firstCharge.format(dateFormatter)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+    }
+}
