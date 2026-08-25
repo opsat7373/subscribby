@@ -1,12 +1,16 @@
 package com.opsat.subscribity.presentation.addsubscription
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.opsat.subscribity.domain.model.BillingPeriod
 import com.opsat.subscribity.domain.model.CurrencyCode
 import com.opsat.subscribity.domain.model.Subscription
 import com.opsat.subscribity.domain.usecase.AddSubscriptionUseCase
+import com.opsat.subscribity.domain.usecase.DeleteSubscriptionUseCase
+import com.opsat.subscribity.domain.usecase.EditSubscriptionUseCase
 import com.opsat.subscribity.domain.usecase.ObserveSubscriptionsUseCase
+import com.opsat.subscribity.presentation.navigation.SUBSCRIPTION_ID_ARG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -22,9 +26,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddSubscriptionViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val addSubscription: AddSubscriptionUseCase,
+    private val editSubscription: EditSubscriptionUseCase,
+    private val deleteSubscription: DeleteSubscriptionUseCase,
     private val observeSubscriptions: ObserveSubscriptionsUseCase,
 ) : ViewModel() {
+
+    private val subscriptionId: Long = savedStateHandle[SUBSCRIPTION_ID_ARG] ?: 0L
 
     private val _state = MutableStateFlow(createInitialState())
     val state: StateFlow<AddSubscriptionState> = _state.asStateFlow()
@@ -34,12 +43,33 @@ class AddSubscriptionViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val usedCodes = observeSubscriptions().first().map { it.currency.code }
+            val subscriptions = observeSubscriptions().first()
+            val usedCodes = subscriptions.map { it.currency.code }
             val options = buildCurrencyOptions(usedCodes)
             // Not re-filtered by the current currencyQuery: that query is pre-filled with the
             // default selected currency's code, and filtering by it here would immediately hide
             // every other currency before the user has actually opened/searched the picker.
             _state.update { it.copy(allCurrencyOptions = options, filteredCurrencyOptions = options) }
+
+            if (subscriptionId != 0L) {
+                val existing = subscriptions.firstOrNull { it.id == subscriptionId }
+                if (existing == null) {
+                    _effects.send(AddSubscriptionEffect.NavigateBack)
+                } else {
+                    _state.update {
+                        it.copy(
+                            mode = AddSubscriptionMode.Edit(subscriptionId, originalName = existing.name),
+                            name = existing.name,
+                            priceText = existing.price.toPlainString(),
+                            selectedCurrency = options.firstOrNull { opt -> opt.code == existing.currency.code },
+                            currencyQuery = existing.currency.code,
+                            periodOption = existing.period.toPeriodOption(),
+                            customPeriodDaysText = (existing.period as? BillingPeriod.Custom)?.days?.toString().orEmpty(),
+                            nextPaymentDate = existing.nextPaymentDate,
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -86,11 +116,56 @@ class AddSubscriptionViewModel @Inject constructor(
 
             AddSubscriptionIntent.Cancel -> navigateBack()
 
-            AddSubscriptionIntent.Save -> save()
+            AddSubscriptionIntent.Save -> onPrimaryActionClicked()
+
+            AddSubscriptionIntent.ConfirmUpdate -> confirmUpdate()
+
+            AddSubscriptionIntent.DismissUpdateConfirmation ->
+                _state.update { it.copy(isUpdateConfirmationVisible = false) }
+
+            AddSubscriptionIntent.DeleteClicked ->
+                _state.update { it.copy(isDeleteConfirmationVisible = true) }
+
+            AddSubscriptionIntent.ConfirmDelete -> confirmDelete()
+
+            AddSubscriptionIntent.DismissDeleteConfirmation ->
+                _state.update { it.copy(isDeleteConfirmationVisible = false) }
         }
     }
 
-    private fun save() {
+    private fun onPrimaryActionClicked() {
+        val subscription = buildValidSubscriptionOrNull() ?: return
+        when (_state.value.mode) {
+            AddSubscriptionMode.Create -> {
+                _state.update { it.copy(isSaving = true) }
+                viewModelScope.launch {
+                    addSubscription(subscription)
+                    _effects.send(AddSubscriptionEffect.NavigateBack)
+                }
+            }
+            is AddSubscriptionMode.Edit -> _state.update { it.copy(isUpdateConfirmationVisible = true) }
+        }
+    }
+
+    private fun confirmUpdate() {
+        val subscription = buildValidSubscriptionOrNull() ?: return
+        _state.update { it.copy(isUpdateConfirmationVisible = false, isSaving = true) }
+        viewModelScope.launch {
+            editSubscription(subscription)
+            _effects.send(AddSubscriptionEffect.NavigateBack)
+        }
+    }
+
+    private fun confirmDelete() {
+        val id = (_state.value.mode as? AddSubscriptionMode.Edit)?.subscriptionId ?: return
+        _state.update { it.copy(isDeleteConfirmationVisible = false, isSaving = true) }
+        viewModelScope.launch {
+            deleteSubscription(id)
+            _effects.send(AddSubscriptionEffect.NavigateBack)
+        }
+    }
+
+    private fun buildValidSubscriptionOrNull(): Subscription? {
         val current = _state.value
         val price = current.priceText.toBigDecimalOrNull()
         val customDays = current.customPeriodDaysText.toIntOrNull()
@@ -105,11 +180,13 @@ class AddSubscriptionViewModel @Inject constructor(
 
         if (nameError != null || priceError != null || customPeriodError != null) {
             _state.update { it.copy(nameError = nameError, priceError = priceError, customPeriodError = customPeriodError) }
-            return
+            return null
         }
 
-        val currency = current.selectedCurrency ?: return
-        val subscription = Subscription(
+        val currency = current.selectedCurrency ?: return null
+        val existingId = (current.mode as? AddSubscriptionMode.Edit)?.subscriptionId ?: 0L
+        return Subscription(
+            id = existingId,
             name = current.name.trim(),
             icon = current.name.trim(),
             period = current.periodOption.toBillingPeriod(customDays),
@@ -117,12 +194,6 @@ class AddSubscriptionViewModel @Inject constructor(
             currency = CurrencyCode(currency.code),
             nextPaymentDate = current.nextPaymentDate,
         )
-
-        _state.update { it.copy(isSaving = true) }
-        viewModelScope.launch {
-            addSubscription(subscription)
-            _effects.send(AddSubscriptionEffect.NavigateBack)
-        }
     }
 
     private fun navigateBack() {
@@ -150,4 +221,12 @@ private fun PeriodOption.toBillingPeriod(customDays: Int?): BillingPeriod = when
     PeriodOption.QUARTERLY -> BillingPeriod.Quarterly
     PeriodOption.YEARLY -> BillingPeriod.Yearly
     PeriodOption.CUSTOM -> BillingPeriod.Custom(requireNotNull(customDays))
+}
+
+private fun BillingPeriod.toPeriodOption(): PeriodOption = when (this) {
+    BillingPeriod.Weekly -> PeriodOption.WEEKLY
+    BillingPeriod.Monthly -> PeriodOption.MONTHLY
+    BillingPeriod.Quarterly -> PeriodOption.QUARTERLY
+    BillingPeriod.Yearly -> PeriodOption.YEARLY
+    is BillingPeriod.Custom -> PeriodOption.CUSTOM
 }

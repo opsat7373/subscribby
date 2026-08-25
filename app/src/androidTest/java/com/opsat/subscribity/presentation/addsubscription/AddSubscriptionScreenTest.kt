@@ -69,4 +69,71 @@ class AddSubscriptionScreenTest {
         composeTestRule.onNodeWithText("Name is required").assertIsDisplayed()
         composeTestRule.onNodeWithText("Enter a valid price").assertIsDisplayed()
     }
+
+    @Test
+    fun createModeShowsSaveAndNoDeleteButton() {
+        composeTestRule.setContent {
+            SubscribityTheme {
+                AddSubscriptionScreen(state = AddSubscriptionState(), onIntent = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("New Subscription").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Save").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Delete").assertDoesNotExist()
+    }
+
+    @Test
+    fun editModeShowsFrozenTitleUpdateAndDeleteButtons() {
+        val state = AddSubscriptionState(
+            mode = AddSubscriptionMode.Edit(subscriptionId = 1L, originalName = "Netflix"),
+            name = "Netflix Renamed",
+        )
+
+        composeTestRule.setContent {
+            SubscribityTheme {
+                AddSubscriptionScreen(state = state, onIntent = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("Netflix").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Netflix Renamed").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Update").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Delete").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Save").assertDoesNotExist()
+    }
+
+    @Test
+    fun updateConfirmationDialogIsShownWhenRequested() {
+        val state = AddSubscriptionState(
+            mode = AddSubscriptionMode.Edit(subscriptionId = 1L, originalName = "Netflix"),
+            isUpdateConfirmationVisible = true,
+        )
+
+        composeTestRule.setContent {
+            SubscribityTheme {
+                AddSubscriptionScreen(state = state, onIntent = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("Update subscription?").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Save changes to \"Netflix\"?").assertIsDisplayed()
+    }
+
+    @Test
+    fun deleteConfirmationDialogIsShownWhenRequested() {
+        val state = AddSubscriptionState(
+            mode = AddSubscriptionMode.Edit(subscriptionId = 1L, originalName = "Netflix"),
+            isDeleteConfirmationVisible = true,
+        )
+
+        composeTestRule.setContent {
+            SubscribityTheme {
+                AddSubscriptionScreen(state = state, onIntent = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("Delete subscription?").assertIsDisplayed()
+        composeTestRule.onNodeWithText("This will permanently delete \"Netflix\". This can't be undone.").assertIsDisplayed()
+    }
 }

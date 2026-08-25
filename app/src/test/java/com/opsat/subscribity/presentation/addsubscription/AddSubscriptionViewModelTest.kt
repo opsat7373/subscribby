@@ -1,9 +1,13 @@
 package com.opsat.subscribity.presentation.addsubscription
 
+import androidx.lifecycle.SavedStateHandle
 import com.opsat.subscribity.data.seed.SubscriptionSeedData
 import com.opsat.subscribity.domain.model.BillingPeriod
 import com.opsat.subscribity.domain.usecase.AddSubscriptionUseCase
+import com.opsat.subscribity.domain.usecase.DeleteSubscriptionUseCase
+import com.opsat.subscribity.domain.usecase.EditSubscriptionUseCase
 import com.opsat.subscribity.domain.usecase.ObserveSubscriptionsUseCase
+import com.opsat.subscribity.presentation.navigation.SUBSCRIPTION_ID_ARG
 import com.opsat.subscribity.testing.FakeSubscriptionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,6 +19,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -37,8 +42,11 @@ class AddSubscriptionViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun createViewModel() = AddSubscriptionViewModel(
+    private fun createViewModel(editingId: Long = 0L) = AddSubscriptionViewModel(
+        SavedStateHandle(mapOf(SUBSCRIPTION_ID_ARG to editingId)),
         AddSubscriptionUseCase(repository),
+        EditSubscriptionUseCase(repository),
+        DeleteSubscriptionUseCase(repository),
         ObserveSubscriptionsUseCase(repository),
     )
 
@@ -151,5 +159,162 @@ class AddSubscriptionViewModelTest {
 
         assertEquals("Enter a number of days", viewModel.state.value.customPeriodError)
         assertTrue(repository.addedSubscriptions.isEmpty())
+    }
+
+    @Test
+    fun `editing an existing subscription pre-fills the form`() = runTest {
+        repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
+        val netflix = SubscriptionSeedData.subscriptions.first()
+        val viewModel = createViewModel(editingId = netflix.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertEquals(AddSubscriptionMode.Edit(netflix.id, netflix.name), state.mode)
+        assertEquals(netflix.name, state.name)
+        assertEquals(netflix.price.toPlainString(), state.priceText)
+        assertEquals(netflix.currency.code, state.selectedCurrency?.code)
+        assertEquals(PeriodOption.MONTHLY, state.periodOption)
+        assertEquals(netflix.nextPaymentDate, state.nextPaymentDate)
+    }
+
+    @Test
+    fun `editing a custom-period subscription pre-fills the days field`() = runTest {
+        repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
+        val gym = SubscriptionSeedData.subscriptions.first { it.period is BillingPeriod.Custom }
+        val viewModel = createViewModel(editingId = gym.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(PeriodOption.CUSTOM, viewModel.state.value.periodOption)
+        assertEquals("45", viewModel.state.value.customPeriodDaysText)
+    }
+
+    @Test
+    fun `the title stays frozen after the name field is edited`() = runTest {
+        repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
+        val netflix = SubscriptionSeedData.subscriptions.first()
+        val viewModel = createViewModel(editingId = netflix.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.NameChanged("Something Else"))
+
+        val mode = viewModel.state.value.mode as AddSubscriptionMode.Edit
+        assertEquals(netflix.name, mode.originalName)
+        assertEquals("Something Else", viewModel.state.value.name)
+    }
+
+    @Test
+    fun `save in edit mode opens the update confirmation without persisting`() = runTest {
+        repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
+        val netflix = SubscriptionSeedData.subscriptions.first()
+        val viewModel = createViewModel(editingId = netflix.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val effects = mutableListOf<AddSubscriptionEffect>()
+        val collectJob = launch { viewModel.effects.toList(effects) }
+
+        viewModel.onIntent(AddSubscriptionIntent.PriceChanged("19.99"))
+        viewModel.onIntent(AddSubscriptionIntent.Save)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(viewModel.state.value.isUpdateConfirmationVisible)
+        assertEquals(netflix, repository.subscriptionsFlow.value.first { it.id == netflix.id })
+        assertTrue(effects.isEmpty())
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `confirming update persists changes and navigates back`() = runTest {
+        repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
+        val netflix = SubscriptionSeedData.subscriptions.first()
+        val viewModel = createViewModel(editingId = netflix.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val effects = mutableListOf<AddSubscriptionEffect>()
+        val collectJob = launch { viewModel.effects.toList(effects) }
+
+        viewModel.onIntent(AddSubscriptionIntent.PriceChanged("19.99"))
+        viewModel.onIntent(AddSubscriptionIntent.Save)
+        viewModel.onIntent(AddSubscriptionIntent.ConfirmUpdate)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val updated = repository.subscriptionsFlow.value.first { it.id == netflix.id }
+        assertEquals(BigDecimal("19.99"), updated.price)
+        assertFalse(viewModel.state.value.isUpdateConfirmationVisible)
+        assertEquals(listOf(AddSubscriptionEffect.NavigateBack), effects)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `dismissing the update confirmation persists nothing`() = runTest {
+        repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
+        val netflix = SubscriptionSeedData.subscriptions.first()
+        val viewModel = createViewModel(editingId = netflix.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.PriceChanged("19.99"))
+        viewModel.onIntent(AddSubscriptionIntent.Save)
+        viewModel.onIntent(AddSubscriptionIntent.DismissUpdateConfirmation)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse(viewModel.state.value.isUpdateConfirmationVisible)
+        assertEquals(netflix, repository.subscriptionsFlow.value.first { it.id == netflix.id })
+    }
+
+    @Test
+    fun `delete requires confirmation before removing the subscription`() = runTest {
+        repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
+        val netflix = SubscriptionSeedData.subscriptions.first()
+        val viewModel = createViewModel(editingId = netflix.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val effects = mutableListOf<AddSubscriptionEffect>()
+        val collectJob = launch { viewModel.effects.toList(effects) }
+
+        viewModel.onIntent(AddSubscriptionIntent.DeleteClicked)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(viewModel.state.value.isDeleteConfirmationVisible)
+        assertTrue(repository.subscriptionsFlow.value.any { it.id == netflix.id })
+        assertTrue(effects.isEmpty())
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `confirming delete removes the subscription and navigates back`() = runTest {
+        repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
+        val netflix = SubscriptionSeedData.subscriptions.first()
+        val viewModel = createViewModel(editingId = netflix.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val effects = mutableListOf<AddSubscriptionEffect>()
+        val collectJob = launch { viewModel.effects.toList(effects) }
+
+        viewModel.onIntent(AddSubscriptionIntent.DeleteClicked)
+        viewModel.onIntent(AddSubscriptionIntent.ConfirmDelete)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(repository.subscriptionsFlow.value.none { it.id == netflix.id })
+        assertFalse(viewModel.state.value.isDeleteConfirmationVisible)
+        assertEquals(listOf(AddSubscriptionEffect.NavigateBack), effects)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `dismissing the delete confirmation keeps the subscription`() = runTest {
+        repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
+        val netflix = SubscriptionSeedData.subscriptions.first()
+        val viewModel = createViewModel(editingId = netflix.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.DeleteClicked)
+        viewModel.onIntent(AddSubscriptionIntent.DismissDeleteConfirmation)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse(viewModel.state.value.isDeleteConfirmationVisible)
+        assertTrue(repository.subscriptionsFlow.value.any { it.id == netflix.id })
     }
 }

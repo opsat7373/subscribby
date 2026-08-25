@@ -22,4 +22,7 @@ interface SubscriptionDao {
 
     @Update
     suspend fun update(entity: SubscriptionEntity)
+
+    @Query("DELETE FROM subscriptions WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }

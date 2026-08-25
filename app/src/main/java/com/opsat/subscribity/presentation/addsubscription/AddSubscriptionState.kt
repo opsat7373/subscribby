@@ -6,7 +6,13 @@ enum class PeriodOption { WEEKLY, MONTHLY, QUARTERLY, YEARLY, CUSTOM }
 
 data class CurrencyOption(val code: String, val displayName: String)
 
+sealed interface AddSubscriptionMode {
+    data object Create : AddSubscriptionMode
+    data class Edit(val subscriptionId: Long, val originalName: String) : AddSubscriptionMode
+}
+
 data class AddSubscriptionState(
+    val mode: AddSubscriptionMode = AddSubscriptionMode.Create,
     val name: String = "",
     val nameError: String? = null,
     val priceText: String = "",
@@ -22,4 +28,6 @@ data class AddSubscriptionState(
     val nextPaymentDate: LocalDate = LocalDate.now(),
     val isDatePickerVisible: Boolean = false,
     val isSaving: Boolean = false,
+    val isUpdateConfirmationVisible: Boolean = false,
+    val isDeleteConfirmationVisible: Boolean = false,
 )

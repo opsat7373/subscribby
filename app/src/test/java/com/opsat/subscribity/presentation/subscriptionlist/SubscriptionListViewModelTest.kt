@@ -5,6 +5,8 @@ import com.opsat.subscribity.domain.usecase.ObserveSubscriptionsUseCase
 import com.opsat.subscribity.testing.FakeSubscriptionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -59,5 +61,21 @@ class SubscriptionListViewModelTest {
 
         assertTrue(viewModel.state.value.subscriptions.size == SubscriptionSeedData.subscriptions.size)
         assertEquals(SubscriptionSeedData.subscriptions.map { it.toUiModel() }, viewModel.state.value.subscriptions)
+    }
+
+    @Test
+    fun `selecting an item emits a navigate-to-edit effect with its id`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val effects = mutableListOf<SubscriptionListEffect>()
+        val collectJob = launch { viewModel.effects.toList(effects) }
+
+        viewModel.onIntent(SubscriptionListIntent.SelectSubscription(42L))
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(listOf(SubscriptionListEffect.NavigateToEditSubscription(42L)), effects)
+
+        collectJob.cancel()
     }
 }

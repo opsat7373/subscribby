@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,10 +42,20 @@ import com.opsat.subscribity.presentation.theme.NeonCard
 @Composable
 fun SubscriptionListRoute(
     onAddClick: () -> Unit,
+    onNavigateToEditSubscription: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SubscriptionListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is SubscriptionListEffect.NavigateToEditSubscription -> onNavigateToEditSubscription(effect.id)
+            }
+        }
+    }
+
     SubscriptionListScreen(state = state, onIntent = viewModel::onIntent, onAddClick = onAddClick, modifier = modifier)
 }
 
