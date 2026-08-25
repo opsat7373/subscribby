@@ -24,4 +24,8 @@ class SubscriptionRepositoryImpl @Inject constructor(
     override suspend fun updateSubscription(subscription: Subscription) {
         dao.update(subscription.toEntity())
     }
+
+    override suspend fun deleteSubscription(id: Long) {
+        dao.deleteById(id)
+    }
 }

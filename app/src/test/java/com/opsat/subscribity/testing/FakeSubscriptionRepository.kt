@@ -26,4 +26,8 @@ class FakeSubscriptionRepository : SubscriptionRepository {
     override suspend fun updateSubscription(subscription: Subscription) {
         subscriptionsFlow.value = subscriptionsFlow.value.map { if (it.id == subscription.id) subscription else it }
     }
+
+    override suspend fun deleteSubscription(id: Long) {
+        subscriptionsFlow.value = subscriptionsFlow.value.filterNot { it.id == id }
+    }
 }

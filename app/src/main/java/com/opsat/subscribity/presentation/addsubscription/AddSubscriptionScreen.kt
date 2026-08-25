@@ -15,7 +15,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -25,6 +27,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -77,17 +80,47 @@ fun AddSubscriptionScreen(
     onIntent: (AddSubscriptionIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val mode = state.mode
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text("New Subscription") },
+                title = {
+                    Text(
+                        when (mode) {
+                            AddSubscriptionMode.Create -> "New Subscription"
+                            is AddSubscriptionMode.Edit -> mode.originalName
+                        },
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { onIntent(AddSubscriptionIntent.Cancel) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
             )
+        },
+        bottomBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                OutlinedButton(
+                    onClick = { onIntent(AddSubscriptionIntent.Cancel) },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("Cancel")
+                }
+                Button(
+                    onClick = { onIntent(AddSubscriptionIntent.Save) },
+                    enabled = !state.isSaving,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(if (mode is AddSubscriptionMode.Edit) "Update" else "Save")
+                }
+            }
         },
     ) { contentPadding ->
         Column(
@@ -122,19 +155,59 @@ fun AddSubscriptionScreen(
             PeriodField(state = state, onIntent = onIntent)
             Spacer(modifier = Modifier.height(16.dp))
             DateField(state = state, onIntent = onIntent)
-            Spacer(modifier = Modifier.height(24.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                OutlinedButton(onClick = { onIntent(AddSubscriptionIntent.Cancel) }) {
-                    Text("Cancel")
-                }
-                Button(onClick = { onIntent(AddSubscriptionIntent.Save) }, enabled = !state.isSaving) {
-                    Text("Save")
+            if (mode is AddSubscriptionMode.Edit) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { onIntent(AddSubscriptionIntent.DeleteClicked) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Delete")
                 }
             }
         }
+    }
+
+    if (state.isUpdateConfirmationVisible && mode is AddSubscriptionMode.Edit) {
+        AlertDialog(
+            onDismissRequest = { onIntent(AddSubscriptionIntent.DismissUpdateConfirmation) },
+            title = { Text("Update subscription?") },
+            text = { Text("Save changes to \"${mode.originalName}\"?") },
+            confirmButton = {
+                TextButton(onClick = { onIntent(AddSubscriptionIntent.ConfirmUpdate) }) {
+                    Text("Update")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onIntent(AddSubscriptionIntent.DismissUpdateConfirmation) }) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
+
+    if (state.isDeleteConfirmationVisible && mode is AddSubscriptionMode.Edit) {
+        AlertDialog(
+            onDismissRequest = { onIntent(AddSubscriptionIntent.DismissDeleteConfirmation) },
+            title = { Text("Delete subscription?") },
+            text = { Text("This will permanently delete \"${mode.originalName}\". This can't be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = { onIntent(AddSubscriptionIntent.ConfirmDelete) },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onIntent(AddSubscriptionIntent.DismissDeleteConfirmation) }) {
+                    Text("Cancel")
+                }
+            },
+        )
     }
 }
 

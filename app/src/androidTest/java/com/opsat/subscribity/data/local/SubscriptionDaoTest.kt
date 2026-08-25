@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -86,5 +87,30 @@ class SubscriptionDaoTest {
 
         val stored = dao.getSubscription(generatedId)
         assertEquals(updated, stored)
+    }
+
+    @Test
+    fun deleteByIdRemovesTheRow() = runBlocking {
+        val entity = SubscriptionEntity(
+            name = "Spotify",
+            icon = "spotify",
+            periodType = "MONTHLY",
+            periodCustomDays = null,
+            price = BigDecimal("9.99"),
+            currencyCode = "USD",
+            nextPaymentDate = LocalDate.of(2026, 9, 6),
+            isTrial = false,
+            trialPeriodType = null,
+            trialPeriodCustomDays = null,
+            trialPrice = null,
+            isSharedWithOthers = false,
+            personsCount = 1,
+        )
+        val generatedId = dao.insert(entity)
+
+        dao.deleteById(generatedId)
+
+        assertNull(dao.getSubscription(generatedId))
+        assertEquals(emptyList<SubscriptionEntity>(), dao.observeSubscriptions().first())
     }
 }

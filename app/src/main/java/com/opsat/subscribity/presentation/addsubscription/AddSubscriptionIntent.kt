@@ -14,4 +14,9 @@ sealed interface AddSubscriptionIntent {
     data class DatePickerVisibilityChanged(val visible: Boolean) : AddSubscriptionIntent
     data object Save : AddSubscriptionIntent
     data object Cancel : AddSubscriptionIntent
+    data object ConfirmUpdate : AddSubscriptionIntent
+    data object DismissUpdateConfirmation : AddSubscriptionIntent
+    data object DeleteClicked : AddSubscriptionIntent
+    data object ConfirmDelete : AddSubscriptionIntent
+    data object DismissDeleteConfirmation : AddSubscriptionIntent
 }

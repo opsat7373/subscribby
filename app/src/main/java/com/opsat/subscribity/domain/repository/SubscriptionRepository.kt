@@ -11,4 +11,6 @@ interface SubscriptionRepository {
     suspend fun addSubscription(subscription: Subscription): Long
 
     suspend fun updateSubscription(subscription: Subscription)
+
+    suspend fun deleteSubscription(id: Long)
 }
