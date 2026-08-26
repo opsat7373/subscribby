@@ -15,4 +15,4 @@ data class SubscriptionListItemUiModel(
     val periodLabel: String,
 )
 
-data class SpendingSummaryItemUiModel(val label: String)
+data class SpendingSummaryItemUiModel(val amountLabel: String)

@@ -58,8 +58,7 @@ class AddSubscriptionViewModelTest {
         dispatcher.scheduler.advanceUntilIdle()
 
         val codes = viewModel.state.value.filteredCurrencyOptions.map { it.code }
-        assertEquals("USD", codes[0])
-        assertEquals("UAH", codes[1])
+        assertEquals(listOf("USD", "EUR", "GBP", "UAH", "JPY"), codes.take(5))
     }
 
     @Test

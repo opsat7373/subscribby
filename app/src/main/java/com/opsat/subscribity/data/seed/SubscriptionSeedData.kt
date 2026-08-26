@@ -32,7 +32,7 @@ object SubscriptionSeedData {
             icon = "spotify",
             period = BillingPeriod.Monthly,
             price = BigDecimal("9.99"),
-            currency = CurrencyCode("USD"),
+            currency = CurrencyCode("EUR"),
             nextPaymentDate = LocalDate.now().plusDays(12),
             isTrial = true,
             trialPeriod = BillingPeriod.Weekly,
@@ -44,7 +44,7 @@ object SubscriptionSeedData {
             icon = "youtube",
             period = BillingPeriod.Yearly,
             price = BigDecimal("139.99"),
-            currency = CurrencyCode("USD"),
+            currency = CurrencyCode("GBP"),
             nextPaymentDate = LocalDate.now().plusMonths(4),
         ),
         Subscription(
@@ -55,6 +55,15 @@ object SubscriptionSeedData {
             price = BigDecimal("1200"),
             currency = CurrencyCode("UAH"),
             nextPaymentDate = LocalDate.now().plusDays(20),
+        ),
+        Subscription(
+            id = 5L,
+            name = "Amazon Prime",
+            icon = "amazon",
+            period = BillingPeriod.Monthly,
+            price = BigDecimal("500"),
+            currency = CurrencyCode("JPY"),
+            nextPaymentDate = LocalDate.now().plusDays(10),
         ),
     )
 }

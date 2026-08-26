@@ -19,9 +19,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.opsat.subscribity.presentation.theme.NeonCard
 import com.opsat.subscribity.presentation.theme.NeonPink
@@ -30,7 +31,7 @@ import com.opsat.subscribity.presentation.theme.NeonPink
 fun SpendingSummaryCard(items: List<SpendingSummaryItemUiModel>, modifier: Modifier = Modifier) {
     if (items.isEmpty()) return
 
-    val pages = remember(items) { items.chunked(3) }
+    val pages = remember(items) { items.chunked(2) }
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     Card(
@@ -44,23 +45,12 @@ fun SpendingSummaryCard(items: List<SpendingSummaryItemUiModel>, modifier: Modif
                 state = pagerState,
                 modifier = Modifier.fillMaxWidth(),
             ) { page ->
-                Row(
+                SpendingPage(
+                    items = pages[page],
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    pages[page].forEach { item ->
-                        Text(
-                            text = item.label,
-                            style = MaterialTheme.typography.titleSmall,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 4.dp),
-                        )
-                    }
-                }
+                )
             }
             if (pages.size > 1) {
                 Row(
@@ -82,5 +72,34 @@ fun SpendingSummaryCard(items: List<SpendingSummaryItemUiModel>, modifier: Modif
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun SpendingPage(items: List<SpendingSummaryItemUiModel>, modifier: Modifier = Modifier) {
+    if (items.size == 1) {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            SpendingAmount(items[0])
+        }
+    } else {
+        Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceEvenly) {
+            items.forEach { item ->
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    SpendingAmount(item)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SpendingAmount(item: SpendingSummaryItemUiModel) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = item.amountLabel,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(text = "/ month", style = MaterialTheme.typography.bodySmall)
     }
 }

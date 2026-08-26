@@ -23,7 +23,7 @@ fun Subscription.toUiModel(): SubscriptionListItemUiModel = SubscriptionListItem
 )
 
 fun CurrencySpending.toUiModel(): SpendingSummaryItemUiModel =
-    SpendingSummaryItemUiModel(label = "${monthlyTotal.toPlainString()} ${currencySymbol(currency)} / month")
+    SpendingSummaryItemUiModel(amountLabel = "${monthlyTotal.toPlainString()} ${currencySymbol(currency)}")
 
 private fun formatPrice(price: BigDecimal, currency: CurrencyCode): String =
     "${currencySymbol(currency)} ${price.setScale(2, RoundingMode.HALF_UP)}"
