@@ -13,3 +13,16 @@ fun LocalDate.plus(period: BillingPeriod): LocalDate = when (period) {
         CustomPeriodUnit.MONTHS -> plusMonths(period.count.toLong())
     }
 }
+
+val BillingPeriod.approximateDays: Int
+    get() = when (this) {
+        BillingPeriod.Weekly -> 7
+        BillingPeriod.Monthly -> 30
+        BillingPeriod.Quarterly -> 90
+        BillingPeriod.Yearly -> 365
+        is BillingPeriod.Custom -> when (unit) {
+            CustomPeriodUnit.DAYS -> count
+            CustomPeriodUnit.WEEKS -> count * 7
+            CustomPeriodUnit.MONTHS -> count * 30
+        }
+    }

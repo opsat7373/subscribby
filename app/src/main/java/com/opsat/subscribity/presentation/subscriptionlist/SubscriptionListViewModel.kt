@@ -2,6 +2,7 @@ package com.opsat.subscribity.presentation.subscriptionlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.opsat.subscribity.domain.model.monthlySpendingByCurrency
 import com.opsat.subscribity.domain.usecase.ObserveSubscriptionsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -31,7 +32,11 @@ class SubscriptionListViewModel @Inject constructor(
         observeSubscriptions()
             .onEach { subscriptions ->
                 _state.update {
-                    it.copy(isLoading = false, subscriptions = subscriptions.map { s -> s.toUiModel() })
+                    it.copy(
+                        isLoading = false,
+                        subscriptions = subscriptions.map { s -> s.toUiModel() },
+                        monthlySpending = subscriptions.monthlySpendingByCurrency().map { it.toUiModel() },
+                    )
                 }
             }
             .launchIn(viewModelScope)

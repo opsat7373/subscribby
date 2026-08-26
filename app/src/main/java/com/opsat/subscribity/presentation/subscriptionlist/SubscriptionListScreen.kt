@@ -97,25 +97,33 @@ fun SubscriptionListScreen(
                     text = "No subscriptions yet",
                     modifier = Modifier.align(Alignment.Center),
                 )
-                else -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    itemsIndexed(state.subscriptions, key = { _, item -> item.id }) { index, item ->
-                        var visible by remember(item.id) { mutableStateOf(false) }
-                        LaunchedEffect(item.id) {
-                            delay(minOf(index, 8) * 40L)
-                            visible = true
-                        }
-                        AnimatedVisibility(
-                            visible = visible,
-                            enter = fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 4 },
-                        ) {
-                            SubscriptionListItem(
-                                item = item,
-                                onClick = { onIntent(SubscriptionListIntent.SelectSubscription(item.id)) },
-                            )
+                else -> Column(modifier = Modifier.fillMaxSize()) {
+                    SpendingSummaryCard(
+                        items = state.monthlySpending,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                    )
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        itemsIndexed(state.subscriptions, key = { _, item -> item.id }) { index, item ->
+                            var visible by remember(item.id) { mutableStateOf(false) }
+                            LaunchedEffect(item.id) {
+                                delay(minOf(index, 8) * 40L)
+                                visible = true
+                            }
+                            AnimatedVisibility(
+                                visible = visible,
+                                enter = fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 4 },
+                            ) {
+                                SubscriptionListItem(
+                                    item = item,
+                                    onClick = { onIntent(SubscriptionListIntent.SelectSubscription(item.id)) },
+                                )
+                            }
                         }
                     }
                 }
