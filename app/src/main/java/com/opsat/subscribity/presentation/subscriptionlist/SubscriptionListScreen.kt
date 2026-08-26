@@ -1,6 +1,13 @@
 package com.opsat.subscribity.presentation.subscriptionlist
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -30,14 +37,19 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.opsat.subscribity.presentation.theme.NeonCard
+import kotlinx.coroutines.delay
 
 @Composable
 fun SubscriptionListRoute(
@@ -90,11 +102,21 @@ fun SubscriptionListScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(state.subscriptions, key = { it.id }) { item ->
-                        SubscriptionListItem(
-                            item = item,
-                            onClick = { onIntent(SubscriptionListIntent.SelectSubscription(item.id)) },
-                        )
+                    itemsIndexed(state.subscriptions, key = { _, item -> item.id }) { index, item ->
+                        var visible by remember(item.id) { mutableStateOf(false) }
+                        LaunchedEffect(item.id) {
+                            delay(minOf(index, 8) * 40L)
+                            visible = true
+                        }
+                        AnimatedVisibility(
+                            visible = visible,
+                            enter = fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 4 },
+                        ) {
+                            SubscriptionListItem(
+                                item = item,
+                                onClick = { onIntent(SubscriptionListIntent.SelectSubscription(item.id)) },
+                            )
+                        }
                     }
                 }
             }
@@ -108,9 +130,14 @@ private fun SubscriptionListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (isPressed) 0.96f else 1f, label = "cardScale")
+
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        interactionSource = interactionSource,
+        modifier = modifier.fillMaxWidth().scale(scale),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = NeonCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
