@@ -23,6 +23,7 @@ class SubscriptionListScreenTest {
                     state = SubscriptionListState(isLoading = false, subscriptions = items),
                     onIntent = {},
                     onAddClick = {},
+                    onSettingsClick = {},
                 )
             }
         }
@@ -39,7 +40,12 @@ class SubscriptionListScreenTest {
     fun loadingStateShowsProgressIndicator() {
         composeTestRule.setContent {
             SubscribityTheme {
-                SubscriptionListScreen(state = SubscriptionListState(isLoading = true), onIntent = {}, onAddClick = {})
+                SubscriptionListScreen(
+                    state = SubscriptionListState(isLoading = true),
+                    onIntent = {},
+                    onAddClick = {},
+                    onSettingsClick = {},
+                )
             }
         }
 
@@ -54,6 +60,7 @@ class SubscriptionListScreenTest {
                     state = SubscriptionListState(isLoading = false, subscriptions = emptyList()),
                     onIntent = {},
                     onAddClick = {},
+                    onSettingsClick = {},
                 )
             }
         }

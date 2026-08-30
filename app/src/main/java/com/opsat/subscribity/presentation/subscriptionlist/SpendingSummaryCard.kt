@@ -24,8 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.opsat.subscribity.presentation.theme.NeonCard
-import com.opsat.subscribity.presentation.theme.NeonPink
 
 @Composable
 fun SpendingSummaryCard(items: List<SpendingSummaryItemUiModel>, modifier: Modifier = Modifier) {
@@ -37,7 +35,7 @@ fun SpendingSummaryCard(items: List<SpendingSummaryItemUiModel>, modifier: Modif
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = NeonCard),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(vertical = 16.dp)) {
@@ -66,7 +64,13 @@ fun SpendingSummaryCard(items: List<SpendingSummaryItemUiModel>, modifier: Modif
                                 .padding(horizontal = 3.dp)
                                 .size(if (active) 8.dp else 6.dp)
                                 .clip(CircleShape)
-                                .background(if (active) NeonPink else NeonPink.copy(alpha = 0.3f)),
+                                .background(
+                                    if (active) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                    },
+                                ),
                         )
                     }
                 }

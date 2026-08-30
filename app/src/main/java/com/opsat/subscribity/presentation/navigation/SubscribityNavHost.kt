@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.opsat.subscribity.presentation.addsubscription.AddSubscriptionRoute
+import com.opsat.subscribity.presentation.settings.SettingsRoute
 import com.opsat.subscribity.presentation.subscriptionlist.SubscriptionListRoute
 
 const val SUBSCRIPTION_ID_ARG = "subscriptionId"
@@ -21,6 +22,7 @@ private object Routes {
     const val SUBSCRIPTION_LIST = "subscriptionList"
     const val SUBSCRIPTION_FORM_BASE = "subscriptionForm"
     const val SUBSCRIPTION_FORM_ROUTE = "$SUBSCRIPTION_FORM_BASE?$SUBSCRIPTION_ID_ARG={$SUBSCRIPTION_ID_ARG}"
+    const val SETTINGS = "settings"
 }
 
 @Composable
@@ -36,6 +38,7 @@ fun SubscribityNavHost(navController: NavHostController = rememberNavController(
                 onNavigateToEditSubscription = { id ->
                     navController.navigate("${Routes.SUBSCRIPTION_FORM_BASE}?$SUBSCRIPTION_ID_ARG=$id")
                 },
+                onSettingsClick = { navController.navigate(Routes.SETTINGS) },
             )
         }
         composable(
@@ -45,6 +48,13 @@ fun SubscribityNavHost(navController: NavHostController = rememberNavController(
             popExitTransition = { fadeOut(tween(250)) + slideOutHorizontally(tween(250)) { it } },
         ) {
             AddSubscriptionRoute(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(
+            route = Routes.SETTINGS,
+            enterTransition = { fadeIn(tween(250)) + slideInHorizontally(tween(250)) { it } },
+            popExitTransition = { fadeOut(tween(250)) + slideOutHorizontally(tween(250)) { it } },
+        ) {
+            SettingsRoute(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

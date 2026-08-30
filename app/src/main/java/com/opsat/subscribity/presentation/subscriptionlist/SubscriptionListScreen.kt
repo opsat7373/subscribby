@@ -24,12 +24,14 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -48,13 +50,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.opsat.subscribity.presentation.theme.NeonCard
 import kotlinx.coroutines.delay
 
 @Composable
 fun SubscriptionListRoute(
     onAddClick: () -> Unit,
     onNavigateToEditSubscription: (Long) -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SubscriptionListViewModel = hiltViewModel(),
 ) {
@@ -68,7 +70,13 @@ fun SubscriptionListRoute(
         }
     }
 
-    SubscriptionListScreen(state = state, onIntent = viewModel::onIntent, onAddClick = onAddClick, modifier = modifier)
+    SubscriptionListScreen(
+        state = state,
+        onIntent = viewModel::onIntent,
+        onAddClick = onAddClick,
+        onSettingsClick = onSettingsClick,
+        modifier = modifier,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,11 +85,21 @@ fun SubscriptionListScreen(
     state: SubscriptionListState,
     onIntent: (SubscriptionListIntent) -> Unit,
     onAddClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = { TopAppBar(title = { Text("Subscriptions List") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Subscriptions List") },
+                actions = {
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
+                },
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddClick) {
                 Icon(Icons.Default.Add, contentDescription = "Add subscription")
@@ -147,7 +165,7 @@ private fun SubscriptionListItem(
         interactionSource = interactionSource,
         modifier = modifier.fillMaxWidth().scale(scale),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = NeonCard),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(

@@ -1,7 +1,9 @@
 package com.opsat.subscribity.di
 
 import com.opsat.subscribity.data.repository.SubscriptionRepositoryImpl
+import com.opsat.subscribity.data.repository.ThemePreferencesRepositoryImpl
 import com.opsat.subscribity.domain.repository.SubscriptionRepository
+import com.opsat.subscribity.domain.repository.ThemePreferencesRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -14,4 +16,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindSubscriptionRepository(impl: SubscriptionRepositoryImpl): SubscriptionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindThemePreferencesRepository(impl: ThemePreferencesRepositoryImpl): ThemePreferencesRepository
 }
