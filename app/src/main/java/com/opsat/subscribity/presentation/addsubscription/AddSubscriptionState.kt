@@ -46,7 +46,7 @@ data class AddSubscriptionState(
     val brandIconQuery: String = "",
     val filteredBrandIcons: List<SimpleIconOption> = SimpleIconsCatalog.allIcons,
     val isNameSuggestionsExpanded: Boolean = false,
-    val filteredNameSuggestions: List<SimpleIconOption> = emptyList(),
+    val filteredNameSuggestions: List<SimpleIconOption> = SimpleIconsCatalog.allIcons,
     val isSaving: Boolean = false,
     val isUpdateConfirmationVisible: Boolean = false,
     val isDeleteConfirmationVisible: Boolean = false,

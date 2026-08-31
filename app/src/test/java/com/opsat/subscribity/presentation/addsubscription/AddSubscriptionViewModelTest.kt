@@ -58,6 +58,14 @@ class AddSubscriptionViewModelTest {
     )
 
     @Test
+    fun `name suggestions are populated as soon as the form opens, before any typing`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(SimpleIconsCatalog.allIcons, viewModel.state.value.filteredNameSuggestions)
+    }
+
+    @Test
     fun `initial currency options put already-used currencies first`() = runTest {
         repository.subscriptionsFlow.value = SubscriptionSeedData.subscriptions
         val viewModel = createViewModel()
