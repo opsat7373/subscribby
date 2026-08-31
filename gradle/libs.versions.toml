@@ -17,6 +17,7 @@ lifecycle = "2.11.0"
 hiltComposeViewmodel = "1.4.0"
 navigationCompose = "2.9.8"
 datastore = "1.1.1"
+easycrop = "0.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,6 +47,7 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+easycrop = { group = "io.github.mr0xf00", name = "easycrop", version.ref = "easycrop" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

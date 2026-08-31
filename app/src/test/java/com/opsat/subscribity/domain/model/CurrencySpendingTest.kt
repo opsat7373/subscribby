@@ -13,7 +13,6 @@ class CurrencySpendingTest {
         period: BillingPeriod,
     ) = Subscription(
         name = "Test",
-        icon = "test",
         period = period,
         price = BigDecimal(price),
         currency = CurrencyCode(currency),

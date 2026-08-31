@@ -9,7 +9,7 @@ import java.time.LocalDate
 data class SubscriptionEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L,
     val name: String,
-    val icon: String,
+    val icon: String = "",
     val periodType: String,
     val periodCustomCount: Int?,
     val periodCustomUnit: String?,
@@ -24,4 +24,7 @@ data class SubscriptionEntity(
     val isSharedWithOthers: Boolean,
     val personsCount: Int,
     val notificationsEnabled: Boolean = true,
+    val iconType: String = "LETTER",
+    val iconValue: String? = null,
+    val iconColor: Int? = null,
 )

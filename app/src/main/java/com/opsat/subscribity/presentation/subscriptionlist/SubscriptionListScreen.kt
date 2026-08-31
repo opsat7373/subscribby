@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -47,11 +48,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.opsat.subscribity.domain.model.SubscriptionIconType
+import com.opsat.subscribity.presentation.addsubscription.SimpleIconsCatalog
+import com.opsat.subscribity.presentation.common.LocalFileImage
+import com.opsat.subscribity.presentation.theme.contrastingTextColor
 import kotlinx.coroutines.delay
+import java.io.File
 
 @Composable
 fun SubscriptionListRoute(
@@ -176,7 +185,7 @@ private fun SubscriptionListItem(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            SubscriptionIcon(iconKey = item.iconKey)
+            SubscriptionIcon(item = item)
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = item.name, style = MaterialTheme.typography.titleMedium)
@@ -191,18 +200,53 @@ private fun SubscriptionListItem(
 }
 
 @Composable
-private fun SubscriptionIcon(iconKey: String, modifier: Modifier = Modifier) {
+private fun SubscriptionIcon(item: SubscriptionListItemUiModel, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .size(40.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer),
+            .clip(RoundedCornerShape(12.dp)),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = iconKey.take(1).uppercase(),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-        )
+        when (item.iconType) {
+            SubscriptionIconType.LETTER -> {
+                Box(
+                    modifier = Modifier.matchParentSize().background(Color(item.iconColor)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = item.name.take(1).uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = contrastingTextColor(item.iconColor),
+                    )
+                }
+            }
+
+            SubscriptionIconType.BRAND -> {
+                Box(
+                    modifier = Modifier.matchParentSize().background(Color.White),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val resId = item.iconValue?.let { SimpleIconsCatalog.drawableResFor(it) }
+                    if (resId != null) {
+                        Image(
+                            painter = painterResource(resId),
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp).padding(7.dp),
+                        )
+                    }
+                }
+            }
+
+            SubscriptionIconType.PHOTO -> {
+                val context = LocalContext.current
+                item.iconValue?.let { relativePath ->
+                    LocalFileImage(
+                        file = File(context.filesDir, relativePath),
+                        contentDescription = null,
+                        modifier = Modifier.matchParentSize(),
+                    )
+                }
+            }
+        }
     }
 }

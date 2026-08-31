@@ -2,20 +2,31 @@ package com.opsat.subscribity.presentation.addsubscription
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,6 +34,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -47,18 +59,35 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mr0xf00.easycrop.CropError
+import com.mr0xf00.easycrop.CropResult
+import com.mr0xf00.easycrop.crop
+import com.mr0xf00.easycrop.rememberImageCropper
+import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import com.opsat.subscribity.domain.model.BillingPeriod
 import com.opsat.subscribity.domain.model.CustomPeriodUnit
+import com.opsat.subscribity.domain.model.SubscriptionIconType
 import com.opsat.subscribity.domain.model.plus
+import com.opsat.subscribity.presentation.common.LocalFileImage
+import com.opsat.subscribity.presentation.theme.contrastingTextColor
+import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -96,6 +125,38 @@ fun AddSubscriptionScreen(
     val mode = state.mode
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val imageCropper = rememberImageCropper()
+    var cropError by remember { mutableStateOf<CropError?>(null) }
+    val pickPhotoLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                when (val result = imageCropper.crop(uri, context)) {
+                    CropResult.Cancelled -> {}
+                    is CropError -> cropError = result
+                    is CropResult.Success -> {
+                        val bytes = ByteArrayOutputStream().use { stream ->
+                            result.bitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.JPEG, 90, stream)
+                            stream.toByteArray()
+                        }
+                        onIntent(AddSubscriptionIntent.PhotoIconCropped(bytes))
+                    }
+                }
+            }
+        }
+    }
+    imageCropper.cropState?.let { cropState -> ImageCropperDialog(state = cropState) }
+    cropError?.let {
+        AlertDialog(
+            onDismissRequest = { cropError = null },
+            title = { Text("Couldn't load image") },
+            text = { Text("Please try a different photo.") },
+            confirmButton = { TextButton(onClick = { cropError = null }) { Text("OK") } },
+        )
+    }
+
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) {}
@@ -159,14 +220,14 @@ fun AddSubscriptionScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
-            OutlinedTextField(
-                value = state.name,
-                onValueChange = { onIntent(AddSubscriptionIntent.NameChanged(it)) },
-                label = { Text("Name") },
-                isError = state.nameError != null,
-                supportingText = { state.nameError?.let { Text(it) } },
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
+                SubscriptionIconPreview(
+                    state = state,
+                    onClick = { onIntent(AddSubscriptionIntent.IconPreviewClicked) },
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                NameField(state = state, onIntent = onIntent, modifier = Modifier.weight(1f))
+            }
             Spacer(modifier = Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
                 CurrencyField(state = state, onIntent = onIntent, modifier = Modifier.weight(1f))
@@ -242,6 +303,203 @@ fun AddSubscriptionScreen(
                 }
             },
         )
+    }
+
+    if (state.isIconOptionsDialogVisible) {
+        IconOptionsDialog(
+            onDismissRequest = { onIntent(AddSubscriptionIntent.IconOptionsDialogDismissed) },
+            onLetterClicked = { onIntent(AddSubscriptionIntent.LetterIconSelected) },
+            onIconClicked = { onIntent(AddSubscriptionIntent.BrandIconPickerOpened) },
+            onGetImageClicked = {
+                onIntent(AddSubscriptionIntent.IconOptionsDialogDismissed)
+                pickPhotoLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            },
+        )
+    }
+
+    if (state.isBrandIconPickerVisible) {
+        BrandIconPickerDialog(state = state, onIntent = onIntent)
+    }
+}
+
+@Composable
+private fun SubscriptionIconPreview(
+    state: AddSubscriptionState,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(56.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        when (state.iconType) {
+            SubscriptionIconType.LETTER -> {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color(state.iconColor)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = state.name.take(1).uppercase().ifBlank { "?" },
+                        style = MaterialTheme.typography.titleLarge,
+                        color = contrastingTextColor(state.iconColor),
+                    )
+                }
+            }
+
+            SubscriptionIconType.BRAND -> {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val resId = state.iconValue?.let { SimpleIconsCatalog.drawableResFor(it) }
+                    if (resId != null) {
+                        Image(
+                            painter = painterResource(resId),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(56.dp)
+                                .padding(10.dp),
+                        )
+                    }
+                }
+            }
+
+            SubscriptionIconType.PHOTO -> {
+                val context = LocalContext.current
+                state.iconValue?.let { relativePath ->
+                    LocalFileImage(
+                        file = File(context.filesDir, relativePath),
+                        contentDescription = null,
+                        modifier = Modifier.matchParentSize(),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun IconOptionsDialog(
+    onDismissRequest: () -> Unit,
+    onLetterClicked: () -> Unit,
+    onIconClicked: () -> Unit,
+    onGetImageClicked: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card {
+            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                Text(
+                    text = "Choose icon",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                )
+                IconOptionRow("Letter", onClick = onLetterClicked)
+                IconOptionRow("Icon", onClick = onIconClicked)
+                IconOptionRow("Get Image", onClick = onGetImageClicked)
+            }
+        }
+    }
+}
+
+@Composable
+private fun IconOptionRow(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Text(
+        text = label,
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BrandIconPickerDialog(
+    state: AddSubscriptionState,
+    onIntent: (AddSubscriptionIntent) -> Unit,
+) {
+    Dialog(onDismissRequest = { onIntent(AddSubscriptionIntent.BrandIconPickerDismissed) }) {
+        Card(modifier = Modifier.height(480.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                OutlinedTextField(
+                    value = state.brandIconQuery,
+                    onValueChange = { onIntent(AddSubscriptionIntent.BrandIconQueryChanged(it)) },
+                    label = { Text("Search") },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                LazyVerticalGrid(columns = GridCells.Adaptive(64.dp)) {
+                    items(state.filteredBrandIcons, key = { it.slug }) { option ->
+                        Box(
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White)
+                                .clickable { onIntent(AddSubscriptionIntent.BrandIconSelected(option)) },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Image(
+                                painter = painterResource(option.drawableResId),
+                                contentDescription = option.title,
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .padding(10.dp),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NameField(
+    state: AddSubscriptionState,
+    onIntent: (AddSubscriptionIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ExposedDropdownMenuBox(
+        expanded = state.isNameSuggestionsExpanded,
+        onExpandedChange = { onIntent(AddSubscriptionIntent.NameSuggestionsExpandedChanged(it)) },
+        modifier = modifier,
+    ) {
+        OutlinedTextField(
+            value = state.name,
+            onValueChange = { onIntent(AddSubscriptionIntent.NameChanged(it)) },
+            label = { Text("Name") },
+            isError = state.nameError != null,
+            supportingText = { state.nameError?.let { Text(it) } },
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable).fillMaxWidth(),
+        )
+        ExposedDropdownMenu(
+            expanded = state.isNameSuggestionsExpanded,
+            onDismissRequest = { onIntent(AddSubscriptionIntent.NameSuggestionsExpandedChanged(false)) },
+        ) {
+            state.filteredNameSuggestions.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.title) },
+                    leadingIcon = {
+                        Image(
+                            painter = painterResource(option.drawableResId),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    },
+                    onClick = { onIntent(AddSubscriptionIntent.NameSuggestionSelected(option)) },
+                )
+            }
+        }
     }
 }
 

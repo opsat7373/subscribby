@@ -42,7 +42,6 @@ class ReminderScheduleCoordinatorTest {
     ) = Subscription(
         id = id,
         name = "Test",
-        icon = "test",
         period = BillingPeriod.Monthly,
         price = BigDecimal("9.99"),
         currency = CurrencyCode("USD"),

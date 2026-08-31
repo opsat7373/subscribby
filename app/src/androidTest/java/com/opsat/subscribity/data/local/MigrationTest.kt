@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.opsat.subscribity.domain.model.AvatarColors
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -120,6 +121,60 @@ class MigrationTest {
 
         val migrated = database.subscriptionDao().observeSubscriptions().first().single()
         assertEquals(true, migrated.notificationsEnabled)
+
+        database.close()
+    }
+
+    @Test
+    fun migration3To4AddsIconColumnsWithLetterDefaultAndBackfilledColor() = runBlocking {
+        context.deleteDatabase(dbName)
+
+        val v3Db = SQLiteDatabase.openOrCreateDatabase(context.getDatabasePath(dbName), null)
+        v3Db.execSQL(
+            """
+            CREATE TABLE subscriptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                name TEXT NOT NULL,
+                icon TEXT NOT NULL,
+                periodType TEXT NOT NULL,
+                periodCustomCount INTEGER,
+                periodCustomUnit TEXT,
+                price TEXT NOT NULL,
+                currencyCode TEXT NOT NULL,
+                nextPaymentDate INTEGER NOT NULL,
+                isTrial INTEGER NOT NULL,
+                trialPeriodType TEXT,
+                trialPeriodCustomCount INTEGER,
+                trialPeriodCustomUnit TEXT,
+                trialPrice TEXT,
+                isSharedWithOthers INTEGER NOT NULL,
+                personsCount INTEGER NOT NULL,
+                notificationsEnabled INTEGER NOT NULL DEFAULT 1
+            )
+            """.trimIndent(),
+        )
+        v3Db.execSQL(
+            """
+            INSERT INTO subscriptions (
+                name, icon, periodType, periodCustomCount, periodCustomUnit, price, currencyCode,
+                nextPaymentDate, isTrial, trialPeriodType, trialPeriodCustomCount, trialPeriodCustomUnit,
+                trialPrice, isSharedWithOthers, personsCount, notificationsEnabled
+            ) VALUES (
+                'Netflix', 'netflix', 'MONTHLY', NULL, NULL, '15.99', 'USD', 20000, 0, NULL, NULL, NULL, NULL, 0, 1, 1
+            )
+            """.trimIndent(),
+        )
+        v3Db.version = 3
+        v3Db.close()
+
+        val database = Room.databaseBuilder(context, SubscribityDatabase::class.java, dbName)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .build()
+
+        val migrated = database.subscriptionDao().observeSubscriptions().first().single()
+        assertEquals("LETTER", migrated.iconType)
+        assertEquals(null, migrated.iconValue)
+        assertEquals(AvatarColors.palette[1], migrated.iconColor)
 
         database.close()
     }

@@ -62,7 +62,6 @@ class BillingPeriodDateMathTest {
 
     private fun subscriptionWithNextPaymentDate(nextPaymentDate: LocalDate) = Subscription(
         name = "Test",
-        icon = "test",
         period = BillingPeriod.Monthly,
         price = BigDecimal("9.99"),
         currency = CurrencyCode("USD"),

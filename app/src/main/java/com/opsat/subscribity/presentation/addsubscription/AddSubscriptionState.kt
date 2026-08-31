@@ -1,6 +1,8 @@
 package com.opsat.subscribity.presentation.addsubscription
 
+import com.opsat.subscribity.domain.model.AvatarColors
 import com.opsat.subscribity.domain.model.CustomPeriodUnit
+import com.opsat.subscribity.domain.model.SubscriptionIconType
 import java.time.LocalDate
 
 enum class PeriodOption { WEEKLY, MONTHLY, QUARTERLY, YEARLY, CUSTOM }
@@ -36,6 +38,15 @@ data class AddSubscriptionState(
     val trialPriceText: String = "0",
     val trialPriceError: String? = null,
     val notificationsEnabled: Boolean = true,
+    val iconType: SubscriptionIconType = SubscriptionIconType.LETTER,
+    val iconValue: String? = null,
+    val iconColor: Int = AvatarColors.random(),
+    val isIconOptionsDialogVisible: Boolean = false,
+    val isBrandIconPickerVisible: Boolean = false,
+    val brandIconQuery: String = "",
+    val filteredBrandIcons: List<SimpleIconOption> = SimpleIconsCatalog.allIcons,
+    val isNameSuggestionsExpanded: Boolean = false,
+    val filteredNameSuggestions: List<SimpleIconOption> = emptyList(),
     val isSaving: Boolean = false,
     val isUpdateConfirmationVisible: Boolean = false,
     val isDeleteConfirmationVisible: Boolean = false,

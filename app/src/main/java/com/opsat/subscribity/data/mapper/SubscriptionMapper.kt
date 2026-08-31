@@ -1,10 +1,12 @@
 package com.opsat.subscribity.data.mapper
 
 import com.opsat.subscribity.data.local.SubscriptionEntity
+import com.opsat.subscribity.domain.model.AvatarColors
 import com.opsat.subscribity.domain.model.BillingPeriod
 import com.opsat.subscribity.domain.model.CurrencyCode
 import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import com.opsat.subscribity.domain.model.Subscription
+import com.opsat.subscribity.domain.model.SubscriptionIconType
 
 private const val PERIOD_WEEKLY = "WEEKLY"
 private const val PERIOD_MONTHLY = "MONTHLY"
@@ -17,7 +19,6 @@ private data class PeriodColumns(val type: String, val customCount: Int?, val cu
 fun SubscriptionEntity.toDomain(): Subscription = Subscription(
     id = id,
     name = name,
-    icon = icon,
     period = decodeBillingPeriod(periodType, periodCustomCount, periodCustomUnit),
     price = price,
     currency = CurrencyCode(currencyCode),
@@ -28,6 +29,9 @@ fun SubscriptionEntity.toDomain(): Subscription = Subscription(
     isSharedWithOthers = isSharedWithOthers,
     personsCount = personsCount,
     notificationsEnabled = notificationsEnabled,
+    iconType = SubscriptionIconType.valueOf(iconType),
+    iconValue = iconValue,
+    iconColor = iconColor ?: AvatarColors.random(),
 )
 
 fun Subscription.toEntity(): SubscriptionEntity {
@@ -36,7 +40,6 @@ fun Subscription.toEntity(): SubscriptionEntity {
     return SubscriptionEntity(
         id = id,
         name = name,
-        icon = icon,
         periodType = periodColumns.type,
         periodCustomCount = periodColumns.customCount,
         periodCustomUnit = periodColumns.customUnit,
@@ -51,6 +54,9 @@ fun Subscription.toEntity(): SubscriptionEntity {
         isSharedWithOthers = isSharedWithOthers,
         personsCount = personsCount,
         notificationsEnabled = notificationsEnabled,
+        iconType = iconType.name,
+        iconValue = iconValue,
+        iconColor = iconColor,
     )
 }
 

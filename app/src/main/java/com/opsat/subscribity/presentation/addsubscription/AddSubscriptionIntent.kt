@@ -19,6 +19,20 @@ sealed interface AddSubscriptionIntent {
     data class TrialPeriodUnitSelected(val unit: CustomPeriodUnit) : AddSubscriptionIntent
     data class TrialPriceChanged(val value: String) : AddSubscriptionIntent
     data class NotificationsEnabledToggled(val enabled: Boolean) : AddSubscriptionIntent
+    data class NameSuggestionSelected(val option: SimpleIconOption) : AddSubscriptionIntent
+    data class NameSuggestionsExpandedChanged(val expanded: Boolean) : AddSubscriptionIntent
+    data object IconPreviewClicked : AddSubscriptionIntent
+    data object IconOptionsDialogDismissed : AddSubscriptionIntent
+    data object LetterIconSelected : AddSubscriptionIntent
+    data object BrandIconPickerOpened : AddSubscriptionIntent
+    data object BrandIconPickerDismissed : AddSubscriptionIntent
+    data class BrandIconQueryChanged(val value: String) : AddSubscriptionIntent
+    data class BrandIconSelected(val option: SimpleIconOption) : AddSubscriptionIntent
+    data class PhotoIconCropped(val bytes: ByteArray) : AddSubscriptionIntent {
+        override fun equals(other: Any?): Boolean =
+            this === other || (other is PhotoIconCropped && bytes.contentEquals(other.bytes))
+        override fun hashCode(): Int = bytes.contentHashCode()
+    }
     data object Save : AddSubscriptionIntent
     data object Cancel : AddSubscriptionIntent
     data object ConfirmUpdate : AddSubscriptionIntent
