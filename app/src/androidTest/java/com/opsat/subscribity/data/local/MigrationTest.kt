@@ -72,4 +72,55 @@ class MigrationTest {
 
         database.close()
     }
+
+    @Test
+    fun migration2To3AddsNotificationsEnabledColumnDefaultingToTrue() = runBlocking {
+        context.deleteDatabase(dbName)
+
+        val v2Db = SQLiteDatabase.openOrCreateDatabase(context.getDatabasePath(dbName), null)
+        v2Db.execSQL(
+            """
+            CREATE TABLE subscriptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                name TEXT NOT NULL,
+                icon TEXT NOT NULL,
+                periodType TEXT NOT NULL,
+                periodCustomCount INTEGER,
+                periodCustomUnit TEXT,
+                price TEXT NOT NULL,
+                currencyCode TEXT NOT NULL,
+                nextPaymentDate INTEGER NOT NULL,
+                isTrial INTEGER NOT NULL,
+                trialPeriodType TEXT,
+                trialPeriodCustomCount INTEGER,
+                trialPeriodCustomUnit TEXT,
+                trialPrice TEXT,
+                isSharedWithOthers INTEGER NOT NULL,
+                personsCount INTEGER NOT NULL
+            )
+            """.trimIndent(),
+        )
+        v2Db.execSQL(
+            """
+            INSERT INTO subscriptions (
+                name, icon, periodType, periodCustomCount, periodCustomUnit, price, currencyCode,
+                nextPaymentDate, isTrial, trialPeriodType, trialPeriodCustomCount, trialPeriodCustomUnit,
+                trialPrice, isSharedWithOthers, personsCount
+            ) VALUES (
+                'Netflix', 'netflix', 'MONTHLY', NULL, NULL, '15.99', 'USD', 20000, 0, NULL, NULL, NULL, NULL, 0, 1
+            )
+            """.trimIndent(),
+        )
+        v2Db.version = 2
+        v2Db.close()
+
+        val database = Room.databaseBuilder(context, SubscribityDatabase::class.java, dbName)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .build()
+
+        val migrated = database.subscriptionDao().observeSubscriptions().first().single()
+        assertEquals(true, migrated.notificationsEnabled)
+
+        database.close()
+    }
 }

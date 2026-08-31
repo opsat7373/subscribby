@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.opsat.subscribity.BuildConfig
 import com.opsat.subscribity.data.local.MIGRATION_1_2
+import com.opsat.subscribity.data.local.MIGRATION_2_3
 import com.opsat.subscribity.data.local.SubscribityDatabase
 import com.opsat.subscribity.data.local.SubscriptionDao
 import com.opsat.subscribity.data.seed.SubscriptionSeeder
@@ -30,7 +31,7 @@ object DatabaseModule {
         @ApplicationScope applicationScope: CoroutineScope,
     ): SubscribityDatabase =
         Room.databaseBuilder(context, SubscribityDatabase::class.java, "subscribity.db")
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)

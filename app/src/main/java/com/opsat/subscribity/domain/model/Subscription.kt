@@ -21,6 +21,7 @@ data class Subscription(
     val trialPrice: BigDecimal? = null,
     val isSharedWithOthers: Boolean = false,
     val personsCount: Int = 1,
+    val notificationsEnabled: Boolean = true,
 ) {
     init {
         require(name.isNotBlank()) { "name must not be blank" }

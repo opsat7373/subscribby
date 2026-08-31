@@ -1,7 +1,9 @@
 package com.opsat.subscribity.di
 
+import com.opsat.subscribity.data.repository.NotificationPreferencesRepositoryImpl
 import com.opsat.subscribity.data.repository.SubscriptionRepositoryImpl
 import com.opsat.subscribity.data.repository.ThemePreferencesRepositoryImpl
+import com.opsat.subscribity.domain.repository.NotificationPreferencesRepository
 import com.opsat.subscribity.domain.repository.SubscriptionRepository
 import com.opsat.subscribity.domain.repository.ThemePreferencesRepository
 import dagger.Binds
@@ -20,4 +22,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindThemePreferencesRepository(impl: ThemePreferencesRepositoryImpl): ThemePreferencesRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNotificationPreferencesRepository(
+        impl: NotificationPreferencesRepositoryImpl,
+    ): NotificationPreferencesRepository
 }

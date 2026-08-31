@@ -23,4 +23,5 @@ data class SubscriptionEntity(
     val trialPrice: BigDecimal?,
     val isSharedWithOthers: Boolean,
     val personsCount: Int,
+    val notificationsEnabled: Boolean = true,
 )

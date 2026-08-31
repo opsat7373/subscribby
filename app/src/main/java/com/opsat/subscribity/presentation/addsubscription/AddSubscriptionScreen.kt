@@ -1,5 +1,10 @@
 package com.opsat.subscribity.presentation.addsubscription
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -44,8 +49,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.opsat.subscribity.domain.model.BillingPeriod
@@ -86,6 +93,21 @@ fun AddSubscriptionScreen(
     modifier: Modifier = Modifier,
 ) {
     val mode = state.mode
+
+    val context = LocalContext.current
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) {}
+    LaunchedEffect(Unit) {
+        if (mode is AddSubscriptionMode.Create &&
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -163,6 +185,8 @@ fun AddSubscriptionScreen(
             DateField(state = state, onIntent = onIntent)
             Spacer(modifier = Modifier.height(16.dp))
             TrialSection(state = state, onIntent = onIntent)
+            Spacer(modifier = Modifier.height(16.dp))
+            NotificationToggleRow(state = state, onIntent = onIntent)
             if (mode is AddSubscriptionMode.Edit) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
@@ -464,5 +488,23 @@ private fun TrialSection(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun NotificationToggleRow(
+    state: AddSubscriptionState,
+    onIntent: (AddSubscriptionIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Text("Notify me before payment", modifier = Modifier.weight(1f))
+        Switch(
+            checked = state.notificationsEnabled,
+            onCheckedChange = { onIntent(AddSubscriptionIntent.NotificationsEnabledToggled(it)) },
+        )
     }
 }

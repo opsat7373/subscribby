@@ -1,6 +1,7 @@
 package com.opsat.subscribity.domain.model
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 fun LocalDate.plus(period: BillingPeriod): LocalDate = when (period) {
     BillingPeriod.Weekly -> plusWeeks(1)
@@ -26,3 +27,6 @@ val BillingPeriod.approximateDays: Int
             CustomPeriodUnit.MONTHS -> count * 30
         }
     }
+
+fun Subscription.reminderDateTime(settings: NotificationSettings): LocalDateTime =
+    nextPaymentDate.minusDays(settings.daysBefore.toLong()).atTime(settings.hour, settings.minute)
