@@ -19,7 +19,6 @@ class SubscriptionUiMapperTest {
         currency: CurrencyCode = CurrencyCode("USD"),
     ) = Subscription(
         name = "Test",
-        icon = "test",
         period = period,
         price = price,
         currency = currency,
@@ -33,7 +32,6 @@ class SubscriptionUiMapperTest {
         val expectedDate = LocalDate.of(2026, 9, 1)
             .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
         assertEquals("Test", uiModel.name)
-        assertEquals("test", uiModel.iconKey)
         assertEquals(expectedDate, uiModel.nextPaymentDateLabel)
     }
 

@@ -13,7 +13,6 @@ class SubscriptionTest {
         trialPrice: BigDecimal? = null,
     ) = Subscription(
         name = "Test",
-        icon = "test",
         period = BillingPeriod.Monthly,
         price = BigDecimal("9.99"),
         currency = CurrencyCode("USD"),

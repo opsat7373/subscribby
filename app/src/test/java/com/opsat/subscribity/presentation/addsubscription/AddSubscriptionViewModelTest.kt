@@ -8,7 +8,10 @@ import com.opsat.subscribity.domain.usecase.AddSubscriptionUseCase
 import com.opsat.subscribity.domain.usecase.DeleteSubscriptionUseCase
 import com.opsat.subscribity.domain.usecase.EditSubscriptionUseCase
 import com.opsat.subscribity.domain.usecase.ObserveSubscriptionsUseCase
+import com.opsat.subscribity.domain.model.AvatarColors
+import com.opsat.subscribity.domain.model.SubscriptionIconType
 import com.opsat.subscribity.presentation.navigation.SUBSCRIPTION_ID_ARG
+import com.opsat.subscribity.testing.FakeIconStorage
 import com.opsat.subscribity.testing.FakeSubscriptionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,11 +34,13 @@ class AddSubscriptionViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private lateinit var repository: FakeSubscriptionRepository
+    private lateinit var iconStorage: FakeIconStorage
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         repository = FakeSubscriptionRepository()
+        iconStorage = FakeIconStorage()
     }
 
     @After
@@ -49,7 +54,16 @@ class AddSubscriptionViewModelTest {
         EditSubscriptionUseCase(repository),
         DeleteSubscriptionUseCase(repository),
         ObserveSubscriptionsUseCase(repository),
+        iconStorage,
     )
+
+    @Test
+    fun `name suggestions are populated as soon as the form opens, before any typing`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(SimpleIconsCatalog.allIcons, viewModel.state.value.filteredNameSuggestions)
+    }
 
     @Test
     fun `initial currency options put already-used currencies first`() = runTest {
@@ -104,7 +118,8 @@ class AddSubscriptionViewModelTest {
         assertEquals(1, repository.addedSubscriptions.size)
         val saved = repository.addedSubscriptions.single()
         assertEquals("Netflix", saved.name)
-        assertEquals("Netflix", saved.icon)
+        assertEquals(SubscriptionIconType.BRAND, saved.iconType)
+        assertEquals("netflix", saved.iconValue)
         assertEquals(BigDecimal("15.99"), saved.price)
         assertEquals("USD", saved.currency.code)
         assertEquals(BillingPeriod.Monthly, saved.period)
@@ -432,5 +447,82 @@ class AddSubscriptionViewModelTest {
 
         assertFalse(viewModel.state.value.isDeleteConfirmationVisible)
         assertTrue(repository.subscriptionsFlow.value.any { it.id == netflix.id })
+    }
+
+    @Test
+    fun `typing an exact catalog match auto-substitutes the brand icon`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.NameChanged("Netflix"))
+
+        assertEquals(SubscriptionIconType.BRAND, viewModel.state.value.iconType)
+        assertEquals("netflix", viewModel.state.value.iconValue)
+    }
+
+    @Test
+    fun `typing a partial match does not substitute the brand icon`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.NameChanged("Net"))
+
+        assertEquals(SubscriptionIconType.LETTER, viewModel.state.value.iconType)
+    }
+
+    @Test
+    fun `selecting a name suggestion sets the brand icon and closes the dropdown`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val option = SimpleIconsCatalog.allIcons.first { it.slug == "spotify" }
+        viewModel.onIntent(AddSubscriptionIntent.NameSuggestionSelected(option))
+
+        assertEquals(SubscriptionIconType.BRAND, viewModel.state.value.iconType)
+        assertEquals("spotify", viewModel.state.value.iconValue)
+        assertFalse(viewModel.state.value.isNameSuggestionsExpanded)
+    }
+
+    @Test
+    fun `once the icon is a brand, further name edits do not change it`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.NameChanged("Netflix"))
+        viewModel.onIntent(AddSubscriptionIntent.NameChanged("Netflix (family)"))
+
+        assertEquals(SubscriptionIconType.BRAND, viewModel.state.value.iconType)
+        assertEquals("netflix", viewModel.state.value.iconValue)
+    }
+
+    @Test
+    fun `selecting Letter resets to a letter icon with a palette color`() = runTest {
+        val viewModel = createViewModel()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.NameChanged("Netflix"))
+        viewModel.onIntent(AddSubscriptionIntent.LetterIconSelected)
+
+        assertEquals(SubscriptionIconType.LETTER, viewModel.state.value.iconType)
+        assertEquals(null, viewModel.state.value.iconValue)
+        assertTrue(viewModel.state.value.iconColor in AvatarColors.palette)
+    }
+
+    @Test
+    fun `deleting a photo subscription deletes its file`() = runTest {
+        val photoSubscription = SubscriptionSeedData.subscriptions.first().copy(
+            id = 42L,
+            iconType = SubscriptionIconType.PHOTO,
+            iconValue = "subscription_icons/existing.jpg",
+        )
+        repository.subscriptionsFlow.value = listOf(photoSubscription)
+        val viewModel = createViewModel(editingId = photoSubscription.id)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.onIntent(AddSubscriptionIntent.DeleteClicked)
+        viewModel.onIntent(AddSubscriptionIntent.ConfirmDelete)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(listOf("subscription_icons/existing.jpg"), iconStorage.deleted)
     }
 }

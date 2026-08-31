@@ -3,10 +3,13 @@ package com.opsat.subscribity.presentation.addsubscription
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.opsat.subscribity.domain.model.AvatarColors
 import com.opsat.subscribity.domain.model.BillingPeriod
 import com.opsat.subscribity.domain.model.CurrencyCode
 import com.opsat.subscribity.domain.model.CustomPeriodUnit
 import com.opsat.subscribity.domain.model.Subscription
+import com.opsat.subscribity.domain.model.SubscriptionIconType
+import com.opsat.subscribity.domain.repository.IconStorage
 import com.opsat.subscribity.domain.usecase.AddSubscriptionUseCase
 import com.opsat.subscribity.domain.usecase.DeleteSubscriptionUseCase
 import com.opsat.subscribity.domain.usecase.EditSubscriptionUseCase
@@ -32,6 +35,7 @@ class AddSubscriptionViewModel @Inject constructor(
     private val editSubscription: EditSubscriptionUseCase,
     private val deleteSubscription: DeleteSubscriptionUseCase,
     private val observeSubscriptions: ObserveSubscriptionsUseCase,
+    private val iconStorage: IconStorage,
 ) : ViewModel() {
 
     private val subscriptionId: Long = savedStateHandle[SUBSCRIPTION_ID_ARG] ?: 0L
@@ -79,6 +83,9 @@ class AddSubscriptionViewModel @Inject constructor(
                             trialPriceText = existing.trialPrice?.toPlainString() ?: "0",
                             trialPriceError = if (existing.isTrial) trialPriceErrorFor(existing.trialPrice?.toPlainString() ?: "0") else null,
                             notificationsEnabled = existing.notificationsEnabled,
+                            iconType = existing.iconType,
+                            iconValue = existing.iconValue,
+                            iconColor = existing.iconColor,
                         )
                     }
                 }
@@ -88,8 +95,19 @@ class AddSubscriptionViewModel @Inject constructor(
 
     fun onIntent(intent: AddSubscriptionIntent) {
         when (intent) {
-            is AddSubscriptionIntent.NameChanged ->
-                _state.update { it.copy(name = intent.value, nameError = null) }
+            is AddSubscriptionIntent.NameChanged -> _state.update {
+                val suggestions = SimpleIconsCatalog.filterIconOptions(intent.value)
+                val exactMatch = SimpleIconsCatalog.exactMatchOrNull(intent.value)
+                val applyMatch = exactMatch != null && it.iconType == SubscriptionIconType.LETTER
+                it.copy(
+                    name = intent.value,
+                    nameError = null,
+                    filteredNameSuggestions = suggestions,
+                    isNameSuggestionsExpanded = intent.value.isNotBlank() && suggestions.isNotEmpty(),
+                    iconType = if (applyMatch) SubscriptionIconType.BRAND else it.iconType,
+                    iconValue = if (applyMatch) exactMatch.slug else it.iconValue,
+                )
+            }
 
             is AddSubscriptionIntent.PriceChanged ->
                 _state.update { it.copy(priceText = sanitizePriceInput(intent.value), priceError = null) }
@@ -168,6 +186,83 @@ class AddSubscriptionViewModel @Inject constructor(
             is AddSubscriptionIntent.NotificationsEnabledToggled ->
                 _state.update { it.copy(notificationsEnabled = intent.enabled) }
 
+            is AddSubscriptionIntent.NameSuggestionSelected -> {
+                deleteOldPhotoIfAny()
+                _state.update {
+                    it.copy(
+                        iconType = SubscriptionIconType.BRAND,
+                        iconValue = intent.option.slug,
+                        isNameSuggestionsExpanded = false,
+                    )
+                }
+            }
+
+            is AddSubscriptionIntent.NameSuggestionsExpandedChanged ->
+                _state.update { it.copy(isNameSuggestionsExpanded = intent.expanded) }
+
+            AddSubscriptionIntent.IconPreviewClicked ->
+                _state.update { it.copy(isIconOptionsDialogVisible = true) }
+
+            AddSubscriptionIntent.IconOptionsDialogDismissed ->
+                _state.update { it.copy(isIconOptionsDialogVisible = false) }
+
+            AddSubscriptionIntent.LetterIconSelected -> {
+                deleteOldPhotoIfAny()
+                _state.update {
+                    it.copy(
+                        iconType = SubscriptionIconType.LETTER,
+                        iconValue = null,
+                        iconColor = AvatarColors.random(),
+                        isIconOptionsDialogVisible = false,
+                    )
+                }
+            }
+
+            AddSubscriptionIntent.BrandIconPickerOpened -> _state.update {
+                it.copy(
+                    isBrandIconPickerVisible = true,
+                    isIconOptionsDialogVisible = false,
+                    brandIconQuery = "",
+                    filteredBrandIcons = SimpleIconsCatalog.allIcons,
+                )
+            }
+
+            AddSubscriptionIntent.BrandIconPickerDismissed ->
+                _state.update { it.copy(isBrandIconPickerVisible = false) }
+
+            is AddSubscriptionIntent.BrandIconQueryChanged -> _state.update {
+                it.copy(
+                    brandIconQuery = intent.value,
+                    filteredBrandIcons = SimpleIconsCatalog.filterIconOptions(intent.value),
+                )
+            }
+
+            is AddSubscriptionIntent.BrandIconSelected -> {
+                deleteOldPhotoIfAny()
+                _state.update {
+                    it.copy(
+                        iconType = SubscriptionIconType.BRAND,
+                        iconValue = intent.option.slug,
+                        isBrandIconPickerVisible = false,
+                    )
+                }
+            }
+
+            is AddSubscriptionIntent.PhotoIconCropped -> {
+                val oldPhotoPath = _state.value.iconValue.takeIf { _state.value.iconType == SubscriptionIconType.PHOTO }
+                viewModelScope.launch {
+                    val newPath = iconStorage.savePhoto(intent.bytes)
+                    oldPhotoPath?.let { iconStorage.deletePhoto(it) }
+                    _state.update {
+                        it.copy(
+                            iconType = SubscriptionIconType.PHOTO,
+                            iconValue = newPath,
+                            isIconOptionsDialogVisible = false,
+                        )
+                    }
+                }
+            }
+
             AddSubscriptionIntent.Cancel -> navigateBack()
 
             AddSubscriptionIntent.Save -> onPrimaryActionClicked()
@@ -212,10 +307,23 @@ class AddSubscriptionViewModel @Inject constructor(
 
     private fun confirmDelete() {
         val id = (_state.value.mode as? AddSubscriptionMode.Edit)?.subscriptionId ?: return
+        val current = _state.value
         _state.update { it.copy(isDeleteConfirmationVisible = false, isSaving = true) }
         viewModelScope.launch {
+            if (current.iconType == SubscriptionIconType.PHOTO) {
+                current.iconValue?.let { iconStorage.deletePhoto(it) }
+            }
             deleteSubscription(id)
             _effects.send(AddSubscriptionEffect.NavigateBack)
+        }
+    }
+
+    /** Deletes the currently-set PHOTO icon file, if any, before the state moves to a different icon. */
+    private fun deleteOldPhotoIfAny() {
+        val current = _state.value
+        if (current.iconType == SubscriptionIconType.PHOTO) {
+            val path = current.iconValue ?: return
+            viewModelScope.launch { iconStorage.deletePhoto(path) }
         }
     }
 
@@ -250,7 +358,6 @@ class AddSubscriptionViewModel @Inject constructor(
         return Subscription(
             id = existingId,
             name = current.name.trim(),
-            icon = current.name.trim(),
             period = current.periodOption.toBillingPeriod(customCount, current.customPeriodUnit),
             price = requireNotNull(price),
             currency = CurrencyCode(currency.code),
@@ -263,6 +370,9 @@ class AddSubscriptionViewModel @Inject constructor(
             },
             trialPrice = if (current.isTrial) current.trialPriceText.toBigDecimalOrNull() else null,
             notificationsEnabled = current.notificationsEnabled,
+            iconType = current.iconType,
+            iconValue = current.iconValue,
+            iconColor = current.iconColor,
         )
     }
 
