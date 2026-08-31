@@ -27,6 +27,7 @@ fun SubscriptionEntity.toDomain(): Subscription = Subscription(
     trialPrice = trialPrice,
     isSharedWithOthers = isSharedWithOthers,
     personsCount = personsCount,
+    notificationsEnabled = notificationsEnabled,
 )
 
 fun Subscription.toEntity(): SubscriptionEntity {
@@ -49,6 +50,7 @@ fun Subscription.toEntity(): SubscriptionEntity {
         trialPrice = trialPrice,
         isSharedWithOthers = isSharedWithOthers,
         personsCount = personsCount,
+        notificationsEnabled = notificationsEnabled,
     )
 }
 

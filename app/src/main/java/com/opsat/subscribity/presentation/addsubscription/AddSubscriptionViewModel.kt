@@ -78,6 +78,7 @@ class AddSubscriptionViewModel @Inject constructor(
                             },
                             trialPriceText = existing.trialPrice?.toPlainString() ?: "0",
                             trialPriceError = if (existing.isTrial) trialPriceErrorFor(existing.trialPrice?.toPlainString() ?: "0") else null,
+                            notificationsEnabled = existing.notificationsEnabled,
                         )
                     }
                 }
@@ -163,6 +164,9 @@ class AddSubscriptionViewModel @Inject constructor(
                     trialPriceError = if (it.isTrial) trialPriceErrorFor(sanitized) else null,
                 )
             }
+
+            is AddSubscriptionIntent.NotificationsEnabledToggled ->
+                _state.update { it.copy(notificationsEnabled = intent.enabled) }
 
             AddSubscriptionIntent.Cancel -> navigateBack()
 
@@ -258,6 +262,7 @@ class AddSubscriptionViewModel @Inject constructor(
                 null
             },
             trialPrice = if (current.isTrial) current.trialPriceText.toBigDecimalOrNull() else null,
+            notificationsEnabled = current.notificationsEnabled,
         )
     }
 

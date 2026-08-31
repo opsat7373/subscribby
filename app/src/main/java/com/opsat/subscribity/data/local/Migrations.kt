@@ -43,3 +43,9 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("ALTER TABLE subscriptions_new RENAME TO subscriptions")
     }
 }
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE subscriptions ADD COLUMN notificationsEnabled INTEGER NOT NULL DEFAULT 1")
+    }
+}

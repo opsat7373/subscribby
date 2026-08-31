@@ -18,6 +18,7 @@ sealed interface AddSubscriptionIntent {
     data class TrialPeriodCountChanged(val value: String) : AddSubscriptionIntent
     data class TrialPeriodUnitSelected(val unit: CustomPeriodUnit) : AddSubscriptionIntent
     data class TrialPriceChanged(val value: String) : AddSubscriptionIntent
+    data class NotificationsEnabledToggled(val enabled: Boolean) : AddSubscriptionIntent
     data object Save : AddSubscriptionIntent
     data object Cancel : AddSubscriptionIntent
     data object ConfirmUpdate : AddSubscriptionIntent

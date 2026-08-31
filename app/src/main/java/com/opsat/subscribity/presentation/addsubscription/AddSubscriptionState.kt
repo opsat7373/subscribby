@@ -35,6 +35,7 @@ data class AddSubscriptionState(
     val trialPeriodError: String? = null,
     val trialPriceText: String = "0",
     val trialPriceError: String? = null,
+    val notificationsEnabled: Boolean = true,
     val isSaving: Boolean = false,
     val isUpdateConfirmationVisible: Boolean = false,
     val isDeleteConfirmationVisible: Boolean = false,
