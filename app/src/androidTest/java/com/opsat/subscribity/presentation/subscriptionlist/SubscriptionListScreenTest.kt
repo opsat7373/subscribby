@@ -22,8 +22,6 @@ class SubscriptionListScreenTest {
                 SubscriptionListScreen(
                     state = SubscriptionListState(isLoading = false, subscriptions = items),
                     onIntent = {},
-                    onAddClick = {},
-                    onSettingsClick = {},
                 )
             }
         }
@@ -43,8 +41,6 @@ class SubscriptionListScreenTest {
                 SubscriptionListScreen(
                     state = SubscriptionListState(isLoading = true),
                     onIntent = {},
-                    onAddClick = {},
-                    onSettingsClick = {},
                 )
             }
         }
@@ -59,8 +55,6 @@ class SubscriptionListScreenTest {
                 SubscriptionListScreen(
                     state = SubscriptionListState(isLoading = false, subscriptions = emptyList()),
                     onIntent = {},
-                    onAddClick = {},
-                    onSettingsClick = {},
                 )
             }
         }

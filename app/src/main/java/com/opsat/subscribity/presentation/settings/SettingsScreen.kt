@@ -12,22 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +38,6 @@ import com.opsat.subscribity.domain.model.ThemeMode
 
 @Composable
 fun SettingsRoute(
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -53,7 +45,6 @@ fun SettingsRoute(
     SettingsScreen(
         state = state,
         onIntent = viewModel::onIntent,
-        onNavigateBack = onNavigateBack,
         modifier = modifier,
     )
 }
@@ -63,94 +54,83 @@ fun SettingsRoute(
 fun SettingsScreen(
     state: SettingsState,
     onIntent: (SettingsIntent) -> Unit,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text("Settings") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-            )
-        },
-    ) { contentPadding ->
-        Column(
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .selectableGroup(),
+    ) {
+        Text(
+            text = "Settings",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+        Text(
+            text = "Theme",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+        ThemeModeRow(
+            label = "Light",
+            selected = state.themeMode == ThemeMode.LIGHT,
+            onClick = { onIntent(SettingsIntent.SelectThemeMode(ThemeMode.LIGHT)) },
+        )
+        ThemeModeRow(
+            label = "Dark",
+            selected = state.themeMode == ThemeMode.DARK,
+            onClick = { onIntent(SettingsIntent.SelectThemeMode(ThemeMode.DARK)) },
+        )
+        ThemeModeRow(
+            label = "System default",
+            selected = state.themeMode == ThemeMode.SYSTEM,
+            onClick = { onIntent(SettingsIntent.SelectThemeMode(ThemeMode.SYSTEM)) },
+        )
+        Text(
+            text = "Notifications",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(contentPadding)
-                .padding(vertical = 8.dp)
-                .selectableGroup(),
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
             Text(
-                text = "Theme",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                text = "Enable notifications",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
             )
-            ThemeModeRow(
-                label = "Light",
-                selected = state.themeMode == ThemeMode.LIGHT,
-                onClick = { onIntent(SettingsIntent.SelectThemeMode(ThemeMode.LIGHT)) },
+            Switch(
+                checked = state.notificationsEnabled,
+                onCheckedChange = { onIntent(SettingsIntent.NotificationsEnabledToggled(it)) },
             )
-            ThemeModeRow(
-                label = "Dark",
-                selected = state.themeMode == ThemeMode.DARK,
-                onClick = { onIntent(SettingsIntent.SelectThemeMode(ThemeMode.DARK)) },
-            )
-            ThemeModeRow(
-                label = "System default",
-                selected = state.themeMode == ThemeMode.SYSTEM,
-                onClick = { onIntent(SettingsIntent.SelectThemeMode(ThemeMode.SYSTEM)) },
-            )
-            Text(
-                text = "Notifications",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+        }
+        if (state.notificationsEnabled) {
+            OutlinedTextField(
+                value = state.reminderDaysBeforeText,
+                onValueChange = { onIntent(SettingsIntent.ReminderDaysBeforeChanged(it)) },
+                label = { Text("Days before payment") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-            ) {
-                Text(
-                    text = "Enable notifications",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f),
-                )
-                Switch(
-                    checked = state.notificationsEnabled,
-                    onCheckedChange = { onIntent(SettingsIntent.NotificationsEnabledToggled(it)) },
-                )
-            }
-            if (state.notificationsEnabled) {
-                OutlinedTextField(
-                    value = state.reminderDaysBeforeText,
-                    onValueChange = { onIntent(SettingsIntent.ReminderDaysBeforeChanged(it)) },
-                    label = { Text("Days before payment") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                ReminderTimeField(
-                    hour = state.reminderHour,
-                    minute = state.reminderMinute,
-                    isPickerVisible = state.isTimePickerVisible,
-                    onFieldClicked = { onIntent(SettingsIntent.TimePickerVisibilityChanged(true)) },
-                    onDismiss = { onIntent(SettingsIntent.TimePickerVisibilityChanged(false)) },
-                    onConfirm = { hour, minute -> onIntent(SettingsIntent.ReminderTimeSelected(hour, minute)) },
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+                    .padding(horizontal = 16.dp),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            ReminderTimeField(
+                hour = state.reminderHour,
+                minute = state.reminderMinute,
+                isPickerVisible = state.isTimePickerVisible,
+                onFieldClicked = { onIntent(SettingsIntent.TimePickerVisibilityChanged(true)) },
+                onDismiss = { onIntent(SettingsIntent.TimePickerVisibilityChanged(false)) },
+                onConfirm = { hour, minute -> onIntent(SettingsIntent.ReminderTimeSelected(hour, minute)) },
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

@@ -23,21 +23,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,9 +55,7 @@ import java.io.File
 
 @Composable
 fun SubscriptionListRoute(
-    onAddClick: () -> Unit,
     onNavigateToEditSubscription: (Long) -> Unit,
-    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SubscriptionListViewModel = hiltViewModel(),
 ) {
@@ -83,8 +72,6 @@ fun SubscriptionListRoute(
     SubscriptionListScreen(
         state = state,
         onIntent = viewModel::onIntent,
-        onAddClick = onAddClick,
-        onSettingsClick = onSettingsClick,
         modifier = modifier,
     )
 }
@@ -94,30 +81,15 @@ fun SubscriptionListRoute(
 fun SubscriptionListScreen(
     state: SubscriptionListState,
     onIntent: (SubscriptionListIntent) -> Unit,
-    onAddClick: () -> Unit,
-    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text("Subscriptions List") },
-                actions = {
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddClick) {
-                Icon(Icons.Default.Add, contentDescription = "Add subscription")
-            }
-        },
-    ) { contentPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+    Column(modifier = modifier.fillMaxSize()) {
+        Text(
+            text = "Subscriptions List",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(16.dp),
+        )
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             when {
                 state.isLoading -> CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center).testTag("loading_indicator"),
