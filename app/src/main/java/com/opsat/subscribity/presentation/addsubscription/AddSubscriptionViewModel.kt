@@ -190,6 +190,8 @@ class AddSubscriptionViewModel @Inject constructor(
                 deleteOldPhotoIfAny()
                 _state.update {
                     it.copy(
+                        name = intent.option.title,
+                        nameError = null,
                         iconType = SubscriptionIconType.BRAND,
                         iconValue = intent.option.slug,
                         isNameSuggestionsExpanded = false,

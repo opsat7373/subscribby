@@ -9,14 +9,18 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -63,7 +67,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
@@ -205,10 +211,14 @@ fun AddSubscriptionScreen(
                 style = MaterialTheme.typography.headlineSmall,
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+            ) {
                 SubscriptionIconPreview(
                     state = state,
                     onClick = { onIntent(AddSubscriptionIntent.IconPreviewClicked) },
+                    modifier = Modifier.fillMaxHeight().aspectRatio(1f),
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 NameField(state = state, onIntent = onIntent, modifier = Modifier.weight(1f))
@@ -315,8 +325,8 @@ private fun SubscriptionIconPreview(
 ) {
     Box(
         modifier = modifier
-            .size(56.dp)
             .clip(RoundedCornerShape(16.dp))
+            .border(width = 1.dp, color = MaterialTheme.colorScheme.outline, shape = RoundedCornerShape(16.dp))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
@@ -349,7 +359,7 @@ private fun SubscriptionIconPreview(
                             painter = painterResource(resId),
                             contentDescription = null,
                             modifier = Modifier
-                                .size(56.dp)
+                                .matchParentSize()
                                 .padding(10.dp),
                         )
                     }
@@ -454,14 +464,23 @@ private fun NameField(
     onIntent: (AddSubscriptionIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(text = state.name)) }
+    LaunchedEffect(state.name) {
+        if (textFieldValue.text != state.name) {
+            textFieldValue = TextFieldValue(text = state.name, selection = TextRange(state.name.length))
+        }
+    }
     ExposedDropdownMenuBox(
         expanded = state.isNameSuggestionsExpanded,
         onExpandedChange = { onIntent(AddSubscriptionIntent.NameSuggestionsExpandedChanged(it)) },
         modifier = modifier,
     ) {
         OutlinedTextField(
-            value = state.name,
-            onValueChange = { onIntent(AddSubscriptionIntent.NameChanged(it)) },
+            value = textFieldValue,
+            onValueChange = {
+                textFieldValue = it
+                onIntent(AddSubscriptionIntent.NameChanged(it.text))
+            },
             label = { Text("Name") },
             isError = state.nameError != null,
             supportingText = { state.nameError?.let { Text(it) } },

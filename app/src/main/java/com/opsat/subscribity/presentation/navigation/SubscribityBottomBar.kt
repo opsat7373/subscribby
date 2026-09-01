@@ -3,18 +3,16 @@ package com.opsat.subscribity.presentation.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,10 +25,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 
-private val FabSize = 56.dp
-private val BarHeight = 72.dp
+private val BarHeight = 63.dp
 private val DividerHeight = 1.dp
-private val BarTotalHeight = BarHeight + DividerHeight
+private val AddButtonSize = 49.5.dp
+private val AddButtonCornerRadius = 13.5.dp
+private val NavIconSize = 41.4.dp
+private val AddIconSize = 27.dp
 
 @Composable
 fun SubscribityBottomBar(
@@ -40,46 +40,45 @@ fun SubscribityBottomBar(
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(BarTotalHeight + FabSize / 2),
-    ) {
-        Column(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = DividerHeight)
-            Surface(color = MaterialTheme.colorScheme.background) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().height(BarHeight),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    BottomBarItem(
-                        icon = Icons.AutoMirrored.Filled.List,
-                        label = "List",
-                        selected = isListSelected,
-                        onClick = onListClick,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    BottomBarItem(
-                        icon = Icons.Default.Settings,
-                        label = "Settings",
-                        selected = !isListSelected,
-                        onClick = onSettingsClick,
-                        modifier = Modifier.weight(1f),
-                    )
+    Column(modifier = modifier.fillMaxWidth()) {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = DividerHeight)
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Row(
+                modifier = Modifier.fillMaxWidth().height(BarHeight),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                BottomBarItem(
+                    icon = Icons.AutoMirrored.Filled.List,
+                    label = "List",
+                    selected = isListSelected,
+                    onClick = onListClick,
+                    modifier = Modifier.weight(1f),
+                )
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    Surface(
+                        onClick = onAddClick,
+                        shape = RoundedCornerShape(AddButtonCornerRadius),
+                        color = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(AddButtonSize),
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = "Add subscription",
+                                modifier = Modifier.size(AddIconSize),
+                            )
+                        }
+                    }
                 }
+                BottomBarItem(
+                    icon = Icons.Default.Settings,
+                    label = "Settings",
+                    selected = !isListSelected,
+                    onClick = onSettingsClick,
+                    modifier = Modifier.weight(1f),
+                )
             }
-        }
-        FloatingActionButton(
-            onClick = onAddClick,
-            shape = CircleShape,
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .size(FabSize),
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Add subscription")
         }
     }
 }
@@ -96,10 +95,10 @@ private fun BottomBarItem(
     Column(
         modifier = modifier
             .selectable(selected = selected, onClick = onClick, role = Role.Tab)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Icon(icon, contentDescription = label, tint = tint)
+        Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(NavIconSize))
         Text(text = label, style = MaterialTheme.typography.labelSmall, color = tint)
     }
 }

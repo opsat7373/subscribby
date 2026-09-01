@@ -478,6 +478,7 @@ class AddSubscriptionViewModelTest {
         val option = SimpleIconsCatalog.allIcons.first { it.slug == "spotify" }
         viewModel.onIntent(AddSubscriptionIntent.NameSuggestionSelected(option))
 
+        assertEquals(option.title, viewModel.state.value.name)
         assertEquals(SubscriptionIconType.BRAND, viewModel.state.value.iconType)
         assertEquals("spotify", viewModel.state.value.iconValue)
         assertFalse(viewModel.state.value.isNameSuggestionsExpanded)
