@@ -1,109 +1,104 @@
 package com.opsat.subscribity.presentation.subscriptionlist
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.opsat.subscribity.presentation.common.Plate
+import com.opsat.subscribity.presentation.theme.ControlLabel
+import com.opsat.subscribity.presentation.theme.Dimens
+import com.opsat.subscribity.presentation.theme.FigureM
+import com.opsat.subscribity.presentation.theme.FigureXL
+import com.opsat.subscribity.presentation.theme.MicroLabel
 
 @Composable
 fun SpendingSummaryCard(items: List<SpendingSummaryItemUiModel>, modifier: Modifier = Modifier) {
     if (items.isEmpty()) return
 
+    val paper = MaterialTheme.colorScheme.background
     val pages = remember(items) { items.chunked(2) }
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(modifier = Modifier.padding(vertical = 16.dp)) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxWidth(),
-            ) { page ->
-                SpendingPage(
-                    items = pages[page],
+    Plate(modifier = modifier) {
+        Text(text = "PER MONTH", style = MicroLabel)
+        Spacer(modifier = Modifier.height(8.dp))
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth()) { page ->
+            SpendingPage(items = pages[page], paper = paper)
+        }
+        if (pages.size > 1) {
+            Spacer(modifier = Modifier.height(Dimens.SectionGapSmall))
+            Row {
+                repeat(pages.size) { index ->
+                    Spacer(
+                        modifier = Modifier
+                            .padding(end = 4.dp)
+                            .width(Dimens.TickMarkWidth)
+                            .height(Dimens.TickMarkHeight)
+                            .background(
+                                if (index == pagerState.currentPage) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    paper.copy(alpha = 0.3f)
+                                },
+                            ),
+                    )
+                }
+            }
+        } else {
+            Spacer(modifier = Modifier.height(Dimens.SectionGapSmall))
+            Row {
+                Spacer(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
+                        .width(Dimens.TickMarkWidth)
+                        .height(Dimens.TickMarkHeight)
+                        .background(MaterialTheme.colorScheme.primary),
                 )
             }
-            if (pages.size > 1) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    repeat(pages.size) { index ->
-                        val active = pagerState.currentPage == index
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 3.dp)
-                                .size(if (active) 8.dp else 6.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (active) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                                    },
-                                ),
-                        )
-                    }
-                }
-            }
         }
     }
 }
 
 @Composable
-private fun SpendingPage(items: List<SpendingSummaryItemUiModel>, modifier: Modifier = Modifier) {
+private fun SpendingPage(items: List<SpendingSummaryItemUiModel>, paper: Color, modifier: Modifier = Modifier) {
     if (items.size == 1) {
-        Box(modifier = modifier, contentAlignment = Alignment.Center) {
-            SpendingAmount(items[0])
+        Column(modifier = modifier) {
+            Text(text = items[0].amount, style = FigureXL)
+            Text(text = items[0].currencyCode, style = ControlLabel, color = MaterialTheme.colorScheme.primary)
         }
     } else {
-        Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceEvenly) {
-            items.forEach { item ->
-                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    SpendingAmount(item)
+        Row(modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+            Column {
+                Text(text = items[0].amount, style = FigureXL)
+                Text(text = items[0].currencyCode, style = ControlLabel, color = MaterialTheme.colorScheme.primary)
+            }
+            Row(modifier = Modifier.padding(start = Dimens.FieldBlockPaddingLarge)) {
+                Spacer(
+                    modifier = Modifier
+                        .width(Dimens.HairlineWeight)
+                        .fillMaxHeight()
+                        .background(paper),
+                )
+                Column(modifier = Modifier.padding(start = Dimens.FieldBlockPaddingLarge)) {
+                    Text(text = "ALSO", style = MicroLabel)
+                    Text(text = items[1].amount, style = FigureM)
+                    Text(text = items[1].currencyCode, style = ControlLabel, color = paper.copy(alpha = 0.5f))
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun SpendingAmount(item: SpendingSummaryItemUiModel) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = item.amountLabel,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(text = "/ month", style = MaterialTheme.typography.bodySmall)
     }
 }

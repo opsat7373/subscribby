@@ -1,30 +1,22 @@
 package com.opsat.subscribity.presentation.subscriptionlist
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -37,18 +29,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.opsat.subscribity.domain.model.SubscriptionIconType
 import com.opsat.subscribity.presentation.addsubscription.SimpleIconsCatalog
+import com.opsat.subscribity.presentation.common.LedgerRow
 import com.opsat.subscribity.presentation.common.LocalFileImage
+import com.opsat.subscribity.presentation.theme.BodyRow
+import com.opsat.subscribity.presentation.theme.ControlLabel
+import com.opsat.subscribity.presentation.theme.Dimens
+import com.opsat.subscribity.presentation.theme.MicroLabel
+import com.opsat.subscribity.presentation.theme.PlateLabel
 import com.opsat.subscribity.presentation.theme.contrastingTextColor
 import kotlinx.coroutines.delay
 import java.io.File
@@ -85,9 +82,9 @@ fun SubscriptionListScreen(
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         Text(
-            text = "Subscriptions List",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(16.dp),
+            text = "SUBSCRIPTIONS",
+            style = PlateLabel,
+            modifier = Modifier.padding(horizontal = Dimens.ScreenGutter, vertical = 16.dp),
         )
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             when {
@@ -96,6 +93,7 @@ fun SubscriptionListScreen(
                 )
                 state.subscriptions.isEmpty() -> Text(
                     text = "No subscriptions yet",
+                    style = BodyRow,
                     modifier = Modifier.align(Alignment.Center),
                 )
                 else -> Column(modifier = Modifier.fillMaxSize()) {
@@ -103,12 +101,18 @@ fun SubscriptionListScreen(
                         items = state.monthlySpending,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                            .padding(horizontal = Dimens.ScreenGutter, vertical = 12.dp),
                     )
+                    Column(modifier = Modifier.padding(horizontal = Dimens.ScreenGutter)) {
+                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                            Text(text = "SERVICE · NEXT CHARGE", style = MicroLabel, modifier = Modifier.weight(1f))
+                            Text(text = "AMOUNT", style = MicroLabel, textAlign = TextAlign.End)
+                        }
+                        HardRule()
+                    }
                     LazyColumn(
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(horizontal = Dimens.ScreenGutter),
                     ) {
                         itemsIndexed(state.subscriptions, key = { _, item -> item.id }) { index, item ->
                             var visible by remember(item.id) { mutableStateOf(false) }
@@ -120,12 +124,22 @@ fun SubscriptionListScreen(
                                 visible = visible,
                                 enter = fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 4 },
                             ) {
-                                SubscriptionListItem(
-                                    item = item,
+                                LedgerRow(
+                                    name = item.name,
+                                    dateLabel = item.nextPaymentDateLabel,
+                                    periodLabel = item.periodLabel,
+                                    amount = item.priceLabel,
+                                    emphasized = item.isDueSoon || item.isCustomCycle,
+                                    icon = { SubscriptionIcon(item = item) },
                                     onClick = { onIntent(SubscriptionListIntent.SelectSubscription(item.id)) },
                                 )
                             }
                         }
+                    }
+                    Column(modifier = Modifier.padding(horizontal = Dimens.ScreenGutter)) {
+                        HardRule()
+                        SubscriptionListFooter(state = state)
+                        HardRule()
                     }
                 }
             }
@@ -134,60 +148,47 @@ fun SubscriptionListScreen(
 }
 
 @Composable
-private fun SubscriptionListItem(
-    item: SubscriptionListItemUiModel,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (isPressed) 0.96f else 1f, label = "cardScale")
-
-    Card(
-        onClick = onClick,
-        interactionSource = interactionSource,
-        modifier = modifier.fillMaxWidth().scale(scale),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+private fun SubscriptionListFooter(state: SubscriptionListState, modifier: Modifier = Modifier) {
+    val total = state.monthlySpending.firstOrNull()
+    Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = Dimens.RowVerticalPadding),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SubscriptionIcon(item = item)
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = item.name, style = MaterialTheme.typography.titleMedium)
-                Text(text = item.nextPaymentDateLabel, style = MaterialTheme.typography.bodySmall)
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(text = item.priceLabel, style = MaterialTheme.typography.titleMedium)
-                Text(text = item.periodLabel, style = MaterialTheme.typography.bodySmall)
-            }
+        Text(
+            text = "${state.subscriptions.size} ACTIVE · LEDGER TOTAL",
+            style = MicroLabel,
+            modifier = Modifier.weight(1f),
+        )
+        if (total != null) {
+            Text(text = "${total.amount} ${total.currencyCode}", style = ControlLabel, textAlign = TextAlign.End)
         }
     }
 }
 
 @Composable
-private fun SubscriptionIcon(item: SubscriptionListItemUiModel, modifier: Modifier = Modifier) {
+private fun HardRule(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .size(40.dp)
-            .clip(RoundedCornerShape(12.dp)),
+            .fillMaxWidth()
+            .height(Dimens.HardRuleWeight)
+            .background(MaterialTheme.colorScheme.onBackground),
+    )
+}
+
+@Composable
+private fun SubscriptionIcon(item: SubscriptionListItemUiModel, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.size(Dimens.ListRowIconSize),
         contentAlignment = Alignment.Center,
     ) {
         when (item.iconType) {
             SubscriptionIconType.LETTER -> {
                 Box(
-                    modifier = Modifier.matchParentSize().background(Color(item.iconColor)),
+                    modifier = Modifier.fillMaxSize().background(Color(item.iconColor)),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = item.name.take(1).uppercase(),
-                        style = MaterialTheme.typography.titleMedium,
                         color = contrastingTextColor(item.iconColor),
                     )
                 }
@@ -195,7 +196,7 @@ private fun SubscriptionIcon(item: SubscriptionListItemUiModel, modifier: Modifi
 
             SubscriptionIconType.BRAND -> {
                 Box(
-                    modifier = Modifier.matchParentSize().background(Color.White),
+                    modifier = Modifier.fillMaxSize().background(Color.White),
                     contentAlignment = Alignment.Center,
                 ) {
                     val resId = item.iconValue?.let { SimpleIconsCatalog.drawableResFor(it) }
@@ -203,7 +204,7 @@ private fun SubscriptionIcon(item: SubscriptionListItemUiModel, modifier: Modifi
                         Image(
                             painter = painterResource(resId),
                             contentDescription = null,
-                            modifier = Modifier.size(40.dp).padding(7.dp),
+                            modifier = Modifier.size(Dimens.ListRowIconSize).padding(7.dp),
                         )
                     }
                 }
@@ -215,7 +216,7 @@ private fun SubscriptionIcon(item: SubscriptionListItemUiModel, modifier: Modifi
                     LocalFileImage(
                         file = File(context.filesDir, relativePath),
                         contentDescription = null,
-                        modifier = Modifier.matchParentSize(),
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }

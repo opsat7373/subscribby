@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&family=Archivo:wght@400;500;600;800&family=Space+Mono:wght@400;700&display=swap">
+<style>
+body{margin:0;background:#f2f2f3;color:#1d1f20;font-family:"Barlow",system-ui,sans-serif}
+a{color:#416180;text-decoration:none}
+a:hover{color:#5980a6}
+input,button{font-family:inherit}
+input{border-radius:0}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sc-turn{padding:44px 44px 36px;border-bottom:1px solid rgba(29,31,32,.12);scroll-margin-top:16px}
+.sc-hd{display:flex;align-items:baseline;gap:10px;margin:0 0 8px}
+.sc-id{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1d1f20;color:#f2f2f3;text-decoration:none}
+.sc-name{font:600 14px/1.2 "Barlow Condensed",sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.sc-sub{font:400 12.5px/1.5 "Barlow",sans-serif;color:rgba(29,31,32,.6);max-width:640px;margin:0 0 22px}
+.sc-row{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}
+.sc-opt{display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}
+.sc-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(29,31,32,.09);color:#1d1f20;text-decoration:none}
+.sc-olabel{display:flex;align-items:baseline;gap:8px;font:400 11.5px/1.35 "Barlow",sans-serif;color:rgba(29,31,32,.6);max-width:412px}
+.sc-opt:target .sc-oid{background:#5980a6;color:#f2f2f3}
+.sc-next{margin:26px 0 0;font:400 12px/1.6 "Barlow",sans-serif;color:rgba(29,31,32,.55)}
+</style></helmet>
+
+<section class="sc-turn" id="t4">
+<div class="sc-hd"><a class="sc-id" href="#t4">4</a><span class="sc-name">Ink ledger as the base · deletion added</span></div>
+<p class="sc-sub">Ink ledger is now the working prototype, in both themes. Deletion was the missing piece: every ledger row carries a strike-through delete, the edit screen ends with a destructive block, both route through one confirm sheet, and a 5-second undo bar catches mistakes. Nothing is removed without a second tap.</p>
+<div class="sc-row">
+
+<div class="sc-opt" id="4a">
+<div class="sc-olabel"><a class="sc-oid" href="#4a">4a</a>Tap ✕ on a row, or open an entry and use Delete entry. Theme and state chips above the phone.</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;width:412px;margin-bottom:4px">
+  <sc-for list="{{ lgThemeChips }}" as="c" hint-placeholder-count="2">
+    <button onClick="{{ c.onPick }}" style="height:30px;padding:0 12px;border:1px solid rgba(29,31,32,.25);background:var(--cbg,transparent);color:var(--cfg,#1d1f20);font:600 10px/1 'Archivo',sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;--cbg:{{ c.bg }};--cfg:{{ c.fg }}">{{ c.label }}</button>
+  </sc-for>
+  <span style="width:10px"></span>
+  <sc-for list="{{ lgStateChips }}" as="c" hint-placeholder-count="3">
+    <button onClick="{{ c.onPick }}" style="height:30px;padding:0 12px;border:1px solid rgba(29,31,32,.25);background:var(--cbg,transparent);color:var(--cfg,#1d1f20);font:600 10px/1 'Archivo',sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;--cbg:{{ c.bg }};--cfg:{{ c.fg }}">{{ c.label }}</button>
+  </sc-for>
+</div>
+<x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" dark="{{ lgDarkFrame }}" hint-size="412px,892px">
+<div style="position:relative;height:100%;display:flex;flex-direction:column;overflow:hidden;font-family:'Archivo',sans-serif;--bg:{{ L.bg }};--fg:{{ L.fg }};--dim:{{ L.dim }};--line:{{ L.line }};--rule:{{ L.rule }};--plate-bg:{{ L.plateBg }};--plate-fg:{{ L.plateFg }};--accent:{{ L.accent }};--on-accent:{{ L.onAccent }};--soft:{{ L.soft }};background:var(--bg);color:var(--fg)">
+
+  <div style="flex:1;min-height:0;overflow:auto">
+
+    <sc-if value="{{ lgIsList }}" hint-placeholder-val="{{ true }}">
+    <div>
+      <div style="background:var(--plate-bg);color:var(--plate-fg);padding:18px">
+        <div style="font:800 13px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase">Subscriptions</div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:22px">
+          <div>
+            <div style="font:400 10px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;opacity:.6">Per month</div>
+            <div style="font:800 44px/1 'Archivo',sans-serif;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px">800.00</div>
+            <div style="font:600 12px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-top:8px">UAH</div>
+          </div>
+          <div style="text-align:right;border-left:1px solid var(--line);padding-left:18px">
+            <div style="font:400 10px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;opacity:.6">Also</div>
+            <div style="font:800 26px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums;margin-top:8px">500.00</div>
+            <div style="font:600 11px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase;opacity:.6;margin-top:7px">JPY</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto;padding:14px 18px 8px;font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);border-bottom:2px solid var(--rule)">
+        <span>{{ lgCount }}</span><span>Amount</span>
+      </div>
+
+      <sc-for list="{{ lgRows }}" as="r" hint-placeholder-count="5">
+        <div style="display:flex;align-items:stretch;border-bottom:1px solid var(--line)">
+          <button onClick="{{ r.onTap }}" style="flex:1;min-width:0;display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:16px 14px 16px 18px;background:transparent;border:0;color:var(--fg);cursor:pointer;text-align:left" style-hover="background:var(--soft)">
+            <span>
+              <span style="display:block;font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">{{ r.name }}</span>
+              <span style="display:block;font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--meta,var(--dim));margin-top:7px;--meta:{{ r.metaColor }}">{{ r.meta }}</span>
+            </span>
+            <span style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">{{ r.price }}</span>
+          </button>
+          <button onClick="{{ r.onDelete }}" aria-label="Delete entry" style="width:52px;flex:none;display:flex;align-items:center;justify-content:center;background:transparent;border:0;border-left:1px solid var(--line);color:var(--dim);cursor:pointer" style-hover="background:var(--accent);color:var(--on-accent)">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </button>
+        </div>
+      </sc-for>
+
+      <sc-if value="{{ lgEmpty }}">
+        <div style="padding:40px 18px;text-align:center">
+          <div style="font:600 19px/1.2 'Archivo',sans-serif">Ledger is empty</div>
+          <div style="font:400 12.5px/1.5 'Archivo',sans-serif;color:var(--dim);margin-top:10px">Add a subscription to start tracking the month.</div>
+        </div>
+      </sc-if>
+      <div style="height:22px"></div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ lgIsEdit }}">
+    <div>
+      <div style="background:var(--plate-bg);color:var(--plate-fg);padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px">
+        <div style="font:800 13px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase">Edit entry</div>
+        <button onClick="{{ lgGoList }}" aria-label="Close" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:0;color:var(--plate-fg);cursor:pointer">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:96px 1fr;border-bottom:1px solid var(--line)">
+        <div style="height:96px;display:flex;align-items:center;justify-content:center;background:var(--plate-bg);color:var(--plate-fg);font:800 34px/1 'Archivo',sans-serif">{{ lgEditLetter }}</div>
+        <div style="padding:0 18px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid var(--line)">
+          <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">Name</div>
+          <div style="font:600 22px/1.1 'Archivo',sans-serif;margin-top:9px">{{ lgEdit.name }}</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:16px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)">
+          <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">Currency</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"><span style="font:600 20px/1 'Archivo',sans-serif">{{ lgCurrency }}</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+        </div>
+        <div style="padding:16px 18px;border-bottom:1px solid var(--line)">
+          <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">Price</div>
+          <div style="font:600 20px/1 'Archivo',sans-serif;margin-top:10px;font-variant-numeric:tabular-nums">{{ lgEdit.price }}</div>
+        </div>
+      </div>
+
+      <button onClick="{{ lgCyclePeriod }}" style="width:100%;padding:16px 18px;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--fg);cursor:pointer;text-align:left" style-hover="background:var(--soft)">
+        <span style="display:block;font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">Billing period</span>
+        <span style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"><span style="font:600 20px/1 'Archivo',sans-serif">{{ lgPeriod }}</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></span>
+      </button>
+
+      <div style="padding:16px 18px;border-bottom:1px solid var(--line)">
+        <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">Next payment</div>
+        <div style="display:flex;align-items:baseline;gap:12px;margin-top:10px"><span style="font:600 20px/1 'Archivo',sans-serif">{{ lgEdit.date }}</span><span style="font:400 11px/1 'Archivo',sans-serif;color:var(--accent);letter-spacing:.1em;text-transform:uppercase">{{ lgEdit.cycle }}</span></div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)">
+        <span style="font:500 17px/1 'Archivo',sans-serif">Free trial</span>
+        <button onClick="{{ lgToggleTrial }}" aria-label="Free trial" style="width:58px;height:30px;box-sizing:border-box;flex:none;border:1px solid var(--rule);background:var(--tbg,transparent);padding:3px;display:flex;align-items:center;justify-content:var(--tjust,flex-start);cursor:pointer;--tbg:{{ lgTrialSwitch.track }};--tjust:{{ lgTrialSwitch.justify }}">
+          <span style="width:22px;height:22px;flex:none;background:var(--knob,var(--dim));--knob:{{ lgTrialSwitch.knob }}"></span>
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)">
+        <span style="font:500 17px/1 'Archivo',sans-serif">Notify before payment</span>
+        <button onClick="{{ lgToggleRemind }}" aria-label="Notify before payment" style="width:58px;height:30px;box-sizing:border-box;flex:none;border:1px solid var(--rule);background:var(--tbg,transparent);padding:3px;display:flex;align-items:center;justify-content:var(--tjust,flex-start);cursor:pointer;--tbg:{{ lgRemindSwitch.track }};--tjust:{{ lgRemindSwitch.justify }}">
+          <span style="width:22px;height:22px;flex:none;background:var(--knob,var(--dim));--knob:{{ lgRemindSwitch.knob }}"></span>
+        </button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;margin:20px 18px 0;border:1px solid var(--rule)">
+        <button onClick="{{ lgGoList }}" style="height:58px;background:transparent;border:0;border-right:1px solid var(--rule);color:var(--fg);font:600 13px/1 'Archivo',sans-serif;letter-spacing:.16em;text-transform:uppercase;cursor:pointer" style-hover="background:var(--soft)">Cancel</button>
+        <button onClick="{{ lgGoList }}" style="height:58px;background:var(--plate-bg);border:0;color:var(--plate-fg);font:600 13px/1 'Archivo',sans-serif;letter-spacing:.16em;text-transform:uppercase;cursor:pointer">Save changes</button>
+      </div>
+
+      <div style="margin:26px 18px 30px;border-top:2px solid var(--accent);padding-top:16px">
+        <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)">Danger zone</div>
+        <div style="font:400 12px/1.5 'Archivo',sans-serif;color:var(--dim);margin:10px 0 14px">Deleting removes this entry and its payment history from the ledger. You get five seconds to undo.</div>
+        <button onClick="{{ lgAskDelete }}" style="width:100%;height:56px;display:flex;align-items:center;justify-content:center;gap:10px;background:transparent;border:1px solid var(--accent);color:var(--accent);font:600 13px/1 'Archivo',sans-serif;letter-spacing:.16em;text-transform:uppercase;cursor:pointer" style-hover="background:var(--accent);color:var(--on-accent)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg>
+          Delete entry
+        </button>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ lgConfirmOpen }}">
+    <div style="position:absolute;inset:0;z-index:8;background:rgba(20,22,26,.6);display:flex;align-items:flex-end">
+      <div style="width:100%;background:var(--bg);border-top:2px solid var(--accent);padding:22px 18px 18px">
+        <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)">Confirm delete</div>
+        <div style="font:800 28px/1.1 'Archivo',sans-serif;letter-spacing:-.02em;margin-top:14px">Delete {{ lgConfirmName }}?</div>
+        <div style="font:400 13px/1.5 'Archivo',sans-serif;color:var(--dim);margin-top:10px">{{ lgConfirmPrice }} — it leaves the ledger and stops counting toward the month.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px">
+          <button onClick="{{ lgCancelDelete }}" style="height:56px;background:transparent;border:1px solid var(--rule);color:var(--fg);font:600 13px/1 'Archivo',sans-serif;letter-spacing:.16em;text-transform:uppercase;cursor:pointer" style-hover="background:var(--soft)">Keep</button>
+          <button onClick="{{ lgDoDelete }}" style="height:56px;background:var(--accent);border:0;color:var(--on-accent);font:800 13px/1 'Archivo',sans-serif;letter-spacing:.16em;text-transform:uppercase;cursor:pointer">Delete</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ lgToast }}">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 12px 12px 18px;background:var(--plate-bg);color:var(--plate-fg)">
+      <span style="font:500 13px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">{{ lgToast }}</span>
+      <button onClick="{{ lgUndoDelete }}" style="height:38px;padding:0 14px;background:transparent;border:1px solid var(--plate-fg);color:var(--plate-fg);font:600 11px/1 'Archivo',sans-serif;letter-spacing:.16em;text-transform:uppercase;cursor:pointer">Undo</button>
+    </div>
+  </sc-if>
+
+  <div style="flex:none;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;border-top:2px solid var(--rule);height:72px">
+    <button onClick="{{ lgGoList }}" style="height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:transparent;border:0;color:var(--navA,var(--dim));cursor:pointer;--navA:{{ lgNavList }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      <span style="font:600 10px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase">List</span>
+    </button>
+    <div style="display:flex;align-items:center;justify-content:center">
+      <button onClick="{{ lgGoNew }}" aria-label="Add subscription" style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--on-accent);border:0;cursor:pointer">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      </button>
+    </div>
+    <button onClick="{{ lgGoList }}" style="height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:transparent;border:0;color:var(--dim);cursor:pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h4M12 16h8"></path><rect x="14" y="6" width="4" height="4"></rect><rect x="8" y="14" width="4" height="4"></rect></svg>
+      <span style="font:600 10px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase">Settings</span>
+    </button>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div class="sc-opt" id="4b">
+<div class="sc-olabel"><a class="sc-oid" href="#4b">4b</a>The deletion model — three entry points, one confirmation, one escape hatch.</div>
+<div style="width:330px;border:1px solid rgba(20,22,26,.2);font-family:'Archivo',sans-serif">
+  <div style="background:#14161a;color:#f5f4f0;padding:12px 14px;font:800 10px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase">Delete flow</div>
+  <div style="padding:14px;border-bottom:1px solid rgba(20,22,26,.2)"><div style="font:600 13px/1 'Archivo',sans-serif;letter-spacing:.06em;text-transform:uppercase">1 · Row ✕</div><div style="font:400 12px/1.5 'Archivo',sans-serif;color:rgba(20,22,26,.6);margin-top:7px">52px hit target at the row's end, separated by a rule so it can't be hit while tapping the row.</div></div>
+  <div style="padding:14px;border-bottom:1px solid rgba(20,22,26,.2)"><div style="font:600 13px/1 'Archivo',sans-serif;letter-spacing:.06em;text-transform:uppercase">2 · Danger zone</div><div style="font:400 12px/1.5 'Archivo',sans-serif;color:rgba(20,22,26,.6);margin-top:7px">Bottom of the edit screen, below Save, ruled off in ink-red and outlined — never filled, so it can't be mistaken for the primary action.</div></div>
+  <div style="padding:14px;border-bottom:1px solid rgba(20,22,26,.2)"><div style="font:600 13px/1 'Archivo',sans-serif;letter-spacing:.06em;text-transform:uppercase">3 · Confirm sheet</div><div style="font:400 12px/1.5 'Archivo',sans-serif;color:rgba(20,22,26,.6);margin-top:7px">Names the entry and its amount. "Keep" sits left and outlined; "Delete" right and filled.</div></div>
+  <div style="padding:14px;border-bottom:1px solid rgba(20,22,26,.2)"><div style="font:600 13px/1 'Archivo',sans-serif;letter-spacing:.06em;text-transform:uppercase">4 · Undo bar</div><div style="font:400 12px/1.5 'Archivo',sans-serif;color:rgba(20,22,26,.6);margin-top:7px">Five seconds on the inverted plate, restoring the row at its original index — no dialog needed for the common regret.</div></div>
+  <div style="padding:14px"><div style="font:600 13px/1 'Archivo',sans-serif;letter-spacing:.06em;text-transform:uppercase">Empty state</div><div style="font:400 12px/1.5 'Archivo',sans-serif;color:rgba(20,22,26,.6);margin-top:7px">Delete all five rows to see it — "Ledger is empty" replaces the list, header totals stay.</div></div>
+</div>
+</div>
+
+</div>
+<p class="sc-next">Try next: "long-press to multi-select and delete several" · "swipe a row to reveal delete" · "archive instead of delete, with a paused section" · "put deletion into the Industry version too"</p>
+</section>
+
+<section class="sc-turn" id="t3">
+<div class="sc-hd"><a class="sc-id" href="#t3">3</a><span class="sc-name">Ink ledger — light and dark</span></div>
+<p class="sc-sub">Same seven screens underneath — different visual language. Each in light and dark, on the two screens that carry the identity: the list and the add form. Pick one and I'll extend it across all seven states like <a class="sc-oid" href="#2a">2a</a>.</p>
+<div class="sc-row">
+
+<div class="sc-opt" id="3a">
+<div class="sc-olabel"><a class="sc-oid" href="#3a">3a</a><b>Ink ledger.</b> Paper stock, black rules, one ink-red accent. No tiles — money is set as a ledger column. Light pair, then dark.</div>
+<div style="display:flex;gap:24px">
+<x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+<div style="height:100%;display:flex;flex-direction:column;overflow:hidden;background:#f5f4f0;color:#14161a;font-family:'Archivo',sans-serif">
+  <div style="flex:1;min-height:0;overflow:auto">
+    <div style="background:#14161a;color:#f5f4f0;padding:18px">
+      <div style="font:800 13px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase">Subscriptions</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:22px">
+        <div>
+          <div style="font:400 10px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,244,240,.6)">Per month</div>
+          <div style="font:800 44px/1 'Archivo',sans-serif;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px">800.00</div>
+          <div style="font:600 12px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#e0644d;margin-top:8px">UAH</div>
+        </div>
+        <div style="text-align:right;border-left:1px solid rgba(245,244,240,.25);padding-left:18px">
+          <div style="font:400 10px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,244,240,.6)">Also</div>
+          <div style="font:800 26px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums;margin-top:8px">500.00</div>
+          <div style="font:600 11px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:rgba(245,244,240,.6);margin-top:7px">JPY</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:4px;margin-top:18px">
+        <div style="width:26px;height:3px;background:#e0644d"></div>
+        <div style="width:26px;height:3px;background:rgba(245,244,240,.3)"></div>
+        <div style="width:26px;height:3px;background:rgba(245,244,240,.3)"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr auto;padding:14px 18px 8px;font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,22,26,.5);border-bottom:2px solid #14161a">
+      <span>Service · next charge</span><span>Amount</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:1px solid rgba(20,22,26,.18)">
+      <div><div style="font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">Netflix</div><div style="font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(20,22,26,.5);margin-top:7px">Sep 5 · monthly</div></div>
+      <div style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">$15.99</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:1px solid rgba(20,22,26,.18)">
+      <div><div style="font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">Amazon Prime</div><div style="font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(20,22,26,.5);margin-top:7px">Sep 10 · monthly</div></div>
+      <div style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">¥500</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:1px solid rgba(20,22,26,.18)">
+      <div><div style="font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">Spotify</div><div style="font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(20,22,26,.5);margin-top:7px">Sep 12 · monthly</div></div>
+      <div style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">€9.99</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:1px solid rgba(20,22,26,.18)">
+      <div><div style="font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">Спортзал</div><div style="font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#e0644d;margin-top:7px">Sep 20 · every 45 d</div></div>
+      <div style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">₴1200</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:1px solid rgba(20,22,26,.18)">
+      <div><div style="font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">YouTube Premium</div><div style="font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(20,22,26,.5);margin-top:7px">Dec 31 · yearly</div></div>
+      <div style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">£139.99</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:2px solid #14161a">
+      <div style="font:400 10px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,22,26,.5)">5 active · ledger total</div>
+      <div style="font:800 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">800.00</div>
+    </div>
+  </div>
+  <div style="flex:none;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;border-top:2px solid #14161a;height:72px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;color:#14161a">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      <span style="font:600 10px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase">List</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center">
+      <div style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;background:#e0644d;color:#f5f4f0">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;color:rgba(20,22,26,.45)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h4M12 16h8"></path><rect x="14" y="6" width="4" height="4"></rect><rect x="8" y="14" width="4" height="4"></rect></svg>
+      <span style="font:600 10px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase">Settings</span>
+    </div>
+  </div>
+</div>
+</x-import>
+<x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+<div style="height:100%;display:flex;flex-direction:column;overflow:hidden;background:#f5f4f0;color:#14161a;font-family:'Archivo',sans-serif">
+  <div style="flex:1;min-height:0;overflow:auto">
+    <div style="background:#14161a;color:#f5f4f0;padding:18px">
+      <div style="font:800 13px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase">New entry</div>
+    </div>
+    <div style="display:grid;grid-template-columns:96px 1fr;border-bottom:1px solid rgba(20,22,26,.18)">
+      <div style="height:96px;display:flex;align-items:center;justify-content:center;background:#14161a;color:#f5f4f0;font:800 34px/1 'Archivo',sans-serif">N</div>
+      <div style="padding:0 18px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid rgba(20,22,26,.18)">
+        <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,22,26,.5)">Name</div>
+        <div style="font:600 22px/1 'Archivo',sans-serif;margin-top:9px">Netflix</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr">
+      <div style="padding:16px 18px;border-right:1px solid rgba(20,22,26,.18);border-bottom:1px solid rgba(20,22,26,.18)">
+        <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,22,26,.5)">Currency</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"><span style="font:600 20px/1 'Archivo',sans-serif">USD</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+      </div>
+      <div style="padding:16px 18px;border-bottom:1px solid rgba(20,22,26,.18)">
+        <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,22,26,.5)">Price</div>
+        <div style="font:600 20px/1 'Archivo',sans-serif;margin-top:10px;font-variant-numeric:tabular-nums">15.99</div>
+      </div>
+    </div>
+    <div style="padding:16px 18px;border-bottom:1px solid rgba(20,22,26,.18)">
+      <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,22,26,.5);margin-bottom:12px">Billing period</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);border:1px solid #14161a">
+        <div style="height:44px;display:flex;align-items:center;justify-content:center;border-right:1px solid #14161a;font:600 11px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">Wk</div>
+        <div style="height:44px;display:flex;align-items:center;justify-content:center;border-right:1px solid #14161a;background:#14161a;color:#f5f4f0;font:600 11px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">Mo</div>
+        <div style="height:44px;display:flex;align-items:center;justify-content:center;border-right:1px solid #14161a;font:600 11px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">Qtr</div>
+        <div style="height:44px;display:flex;align-items:center;justify-content:center;border-right:1px solid #14161a;font:600 11px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">Yr</div>
+        <div style="height:44px;display:flex;align-items:center;justify-content:center;font:600 11px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">Cust</div>
+      </div>
+    </div>
+    <div style="padding:16px 18px;border-bottom:1px solid rgba(20,22,26,.18)">
+      <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,22,26,.5)">Next payment</div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-top:10px"><span style="font:600 20px/1 'Archivo',sans-serif">Sep 5, 2026</span><span style="font:400 11px/1 'Archivo',sans-serif;color:#e0644d;letter-spacing:.1em;text-transform:uppercase">in 3 days</span></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(20,22,26,.18)">
+      <span style="font:500 17px/1 'Archivo',sans-serif">Free trial</span>
+      <div style="width:58px;height:30px;box-sizing:border-box;border:1px solid #14161a;box-sizing:border-box;display:flex;align-items:center;justify-content:flex-start;padding:3px"><div style="width:22px;height:22px;background:rgba(20,22,26,.35)"></div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(20,22,26,.18)">
+      <span style="font:500 17px/1 'Archivo',sans-serif">Notify before payment</span>
+      <div style="width:58px;height:30px;box-sizing:border-box;border:1px solid #14161a;background:#e0644d;box-sizing:border-box;display:flex;align-items:center;justify-content:flex-end;padding:3px"><div style="width:22px;height:22px;background:#f5f4f0"></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:0;margin:20px 18px 26px;border:1px solid #14161a">
+      <div style="height:58px;display:flex;align-items:center;justify-content:center;border-right:1px solid #14161a;font:600 13px/1 'Archivo',sans-serif;letter-spacing:.16em;text-transform:uppercase">Cancel</div>
+      <div style="height:58px;display:flex;align-items:center;justify-content:center;background:#14161a;color:#f5f4f0;font:600 13px/1 'Archivo',sans-serif;letter-spacing:.16em;text-transform:uppercase">Save entry</div>
+    </div>
+  </div>
+</div>
+</x-import>
+<x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" dark="{{ true }}" hint-size="412px,892px">
+<div style="height:100%;display:flex;flex-direction:column;overflow:hidden;background:#14161a;color:#f5f4f0;font-family:'Archivo',sans-serif">
+  <div style="flex:1;min-height:0;overflow:auto">
+    <div style="background:#f5f4f0;color:#14161a;padding:18px">
+      <div style="font:800 13px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase">Subscriptions</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:22px">
+        <div>
+          <div style="font:400 10px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,22,26,.6)">Per month</div>
+          <div style="font:800 44px/1 'Archivo',sans-serif;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px">800.00</div>
+          <div style="font:600 12px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#e0644d;margin-top:8px">UAH</div>
+        </div>
+        <div style="text-align:right;border-left:1px solid rgba(20,22,26,.25);padding-left:18px">
+          <div style="font:400 10px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,22,26,.6)">Also</div>
+          <div style="font:800 26px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums;margin-top:8px">500.00</div>
+          <div style="font:600 11px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:rgba(20,22,26,.6);margin-top:7px">JPY</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:4px;margin-top:18px">
+        <div style="width:26px;height:3px;background:#e0644d"></div>
+        <div style="width:26px;height:3px;background:rgba(20,22,26,.3)"></div>
+        <div style="width:26px;height:3px;background:rgba(20,22,26,.3)"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr auto;padding:14px 18px 8px;font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,244,240,.5);border-bottom:2px solid #f5f4f0">
+      <span>Service · next charge</span><span>Amount</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:1px solid rgba(245,244,240,.18)">
+      <div><div style="font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">Netflix</div><div style="font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,244,240,.5);margin-top:7px">Sep 5 · monthly</div></div>
+      <div style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">$15.99</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:1px solid rgba(245,244,240,.18)">
+      <div><div style="font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">Amazon Prime</div><div style="font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,244,240,.5);margin-top:7px">Sep 10 · monthly</div></div>
+      <div style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">¥500</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:1px solid rgba(245,244,240,.18)">
+      <div><div style="font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">Spotify</div><div style="font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,244,240,.5);margin-top:7px">Sep 12 · monthly</div></div>
+      <div style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">€9.99</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:1px solid rgba(245,244,240,.18)">
+      <div><div style="font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">Спортзал</div><div style="font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#e0644d;margin-top:7px">Sep 20 · every 45 d</div></div>
+      <div style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">₴1200</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:1px solid rgba(245,244,240,.18)">
+      <div><div style="font:600 19px/1 'Archivo',sans-serif;letter-spacing:-.01em">YouTube Premium</div><div style="font:400 11px/1 'Archivo',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,244,240,.5);margin-top:7px">Dec 31 · yearly</div></div>
+      <div style="font:600 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">£139.99</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:17px 18px;border-bottom:2px solid #f5f4f0">
+      <div style="font:400 10px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,244,240,.5)">5 active · ledger total</div>
+      <div style="font:800 21px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">800.00</div>
+    </div>
+  </div>
+  <div style="flex:none;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;border-top:2px solid #f5f4f0;height:72px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;color:#f5f4f0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      <span style="font:600 10px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase">List</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center">
+      <div style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;background:#e0644d;color:#14161a">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;color:rgba(245,244,240,.45)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h10M18 8h2M4 16h4M12 16h8"></path><rect x="14" y="6" width="4" height="4"></rect><rect x="8" y="14" width="4" height="4"></rect></svg>
+      <span style="font:600 10px/1 'Archivo',sans-serif;letter-spacing:.18em;text-transform:uppercase">Settings</span>
+    </div>
+  </div>
+</div>
+</x-import>
+<x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" dark="{{ true }}" hint-size="412px,892px">
+<div style="height:100%;display:flex;flex-direction:column;overflow:hidden;background:#14161a;color:#f5f4f0;font-family:'Archivo',sans-serif">
+  <div style="flex:1;min-height:0;overflow:auto">
+    <div style="background:#f5f4f0;color:#14161a;padding:18px">
+      <div style="font:800 13px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase">New entry</div>
+    </div>
+    <div style="display:grid;grid-template-columns:96px 1fr;border-bottom:1px solid rgba(245,244,240,.18)">
+      <div style="height:96px;display:flex;align-items:center;justify-content:center;background:#f5f4f0;color:#14161a;font:800 34px/1 'Archivo',sans-serif">N</div>
+      <div style="padding:0 18px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid rgba(245,244,240,.18)">
+        <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,244,240,.5)">Name</div>
+        <div style="font:600 22px/1 'Archivo',sans-serif;margin-top:9px">Netflix</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr">
+      <div style="padding:16px 18px;border-right:1px solid rgba(245,244,240,.18);border-bottom:1px solid rgba(245,244,240,.18)">
+        <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,244,240,.5)">Currency</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"><span style="font:600 20px/1 'Archivo',sans-serif">USD</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+      </div>
+      <div style="padding:16px 18px;border-bottom:1px solid rgba(245,244,240,.18)">
+        <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,244,240,.5)">Price</div>
+        <div style="font:600 20px/1 'Archivo',sans-serif;margin-top:10px;font-variant-numeric:tabular-nums">15.99</div>
+      </div>
+    </div>
+    <div style="padding:16px 18px;border-bottom:1px solid rgba(245,244,240,.18)">
+      <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,244,240,.5);margin-bottom:12px">Billing period</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);border:1px solid #f5f4f0">
+        <div style="height:44px;display:flex;align-items:center;justify-content:center;border-right:1px solid #f5f4f0;font:600 11px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">Wk</div>
+        <div style="height:44px;display:flex;align-items:center;justify-content:center;border-right:1px solid #f5f4f0;background:#f5f4f0;color:#14161a;font:600 11px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">Mo</div>
+        <div style="height:44px;display:flex;align-items:center;justify-content:center;border-right:1px solid #f5f4f0;font:600 11px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">Qtr</div>
+        <div style="height:44px;display:flex;align-items:center;justify-content:center;border-right:1px solid #f5f4f0;font:600 11px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">Yr</div>
+        <div style="height:44px;display:flex;align-items:center;justify-content:center;font:600 11px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase">Cust</div>
+      </div>
+    </div>
+    <div style="padding:16px 18px;border-bottom:1px solid rgba(245,244,240,.18)">
+      <div style="font:400 9.5px/1 'Archivo',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,244,240,.5)">Next payment</div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-top:10px"><span style="font:600 20px/1 'Archivo',sans-serif">Sep 5, 2026</span><span style="font:400 11px/1 'Archivo',sans-serif;color:#e0644d;letter-spacing:.1em;text-transform:uppercase">in 3 days</span></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(245,244,240,.18)">
+      <span style="font:500 17px/1 'Archivo',sans-serif">Free trial</span>
+      <div style="width:58px;height:30px;box-sizing:border-box;border:1px solid #f5f4f0;box-sizing:border-box;display:flex;align-items:center;justify-content:flex-start;padding:3px"><div style="width:22px;height:22px;background:rgba(245,244,240,.35)"></div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(245,244,240,.18)">
+      <span style="font:500 17px/1 'Archivo',sans-serif">Notify before payment</span>
+      <div style="width:58px;height:30px;box-sizing:border-box;border:1px solid #f5f4f0;background:#e0644d;box-sizing:border-box;display:flex;align-items:center;justify-content:flex-end;padding:3px"><div style="width:22px;height:22px;background:#14161a"></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:0;margin:20px 18px 26px;border:1px solid #f5f4f0">
+      <div style="height:58px;display:flex;align-items:center;justify-content:center;border-right:1px solid #f5f4f0;font:600 13px/1 'Archivo',sans-serif;letter-spacing:.16em;text-transform:uppercase">Cancel</div>
+      <div style="height:58px;display:flex;align-items:center;justify-content:center;background:#f5f4f0;color:#14161a;font:600 13px/1 'Archivo',sans-serif;letter-spacing:.16em;text-transform:uppercase">Save entry</div>
+    </div>
+  </div>
+</div>
+</x-import>
+</div>
+</div>
+
+</div>
+<p class="sc-next">Say the id and I'll take it across all seven states with working interactions: "<a class="sc-oid" href="#3a">3a</a> everywhere" · "<a class="sc-oid" href="#3c">3c</a>, but lighter accent" · "mix <a class="sc-oid" href="#3c">3c</a>'s header with <a class="sc-oid" href="#2a">2a</a>'s form"</p>
+</section>
+
+<section class="sc-turn" id="t2">
+<div class="sc-hd"><a class="sc-id" href="#t2">2</a><span class="sc-name">Your seven screens, restyled</span></div>
+<p class="sc-sub">Same structure, same fields, same states as the build — Material rounded cards swapped for the Industry blueprint: square plates, hairline rules, corner ticks, Barlow Condensed labels, steel-blue accent instead of purple. Use the state buttons above the phone to walk the flow.</p>
+<div class="sc-row">
+
+<div class="sc-opt" id="2a">
+<div class="sc-olabel"><a class="sc-oid" href="#2a">2a</a>Live prototype — all seven states, each mapped to one screenshot.</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;width:412px;margin-bottom:4px">
+  <sc-for list="{{ stateChips }}" as="c" hint-placeholder-count="7">
+    <button onClick="{{ c.onPick }}" style="height:30px;padding:0 10px;border:1px solid rgba(29,31,32,.2);background:var(--cbg,transparent);color:var(--cfg,#1d1f20);font:600 10px/1 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;--cbg:{{ c.bg }};--cfg:{{ c.fg }}">{{ c.label }}</button>
+  </sc-for>
+</div>
+<x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" dark="{{ dark }}" hint-size="412px,892px">
+<div style="position:relative;height:100%;display:flex;flex-direction:column;overflow:hidden;font-family:'Barlow',system-ui,sans-serif;--fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--bg:{{ t.bg }};--fg:{{ t.fg }};--muted:{{ t.muted }};--line:{{ t.line }};--accent:{{ t.accent }};--tint:{{ t.tint }};--on-accent:{{ t.onAccent }};--mark:{{ t.mark }};--disabled:{{ t.disabled }};background:var(--bg);color:var(--fg)">
+
+  <div style="flex:1;min-height:0;overflow:auto">
+
+    <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+    <div>
+      <div style="padding:20px 18px 16px">
+        <div style="font:600 30px/1 var(--fh);letter-spacing:.01em;text-transform:uppercase">Subscriptions List</div>
+      </div>
+
+      <div style="padding:0 18px 20px">
+        <div style="position:relative;border:1px solid var(--line);background:var(--tint);padding:22px 18px 16px">
+          <div style="position:absolute;top:-6px;left:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></div>
+          <div style="position:absolute;top:-6px;right:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></div>
+          <div style="position:absolute;bottom:-6px;left:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></div>
+          <div style="position:absolute;bottom:-6px;right:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></div>
+          <div style="display:grid;grid-template-columns:1fr 1px 1fr;align-items:end;gap:16px">
+            <div>
+              <div style="font:600 34px/1 var(--fh);letter-spacing:-.01em;font-variant-numeric:tabular-nums">{{ page.leftAmount }}</div>
+              <div style="font:600 12px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-top:8px">{{ page.leftCur }} / month</div>
+            </div>
+            <div style="width:1px;height:52px;background:var(--line)"></div>
+            <div>
+              <div style="font:600 34px/1 var(--fh);letter-spacing:-.01em;font-variant-numeric:tabular-nums">{{ page.rightAmount }}</div>
+              <div style="font:600 12px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-top:8px">{{ page.rightCur }} / month</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;gap:7px;margin-top:18px">
+            <sc-for list="{{ pagerDots }}" as="d" hint-placeholder-count="3">
+              <button onClick="{{ d.onPick }}" aria-label="Currency page" style="width:22px;height:6px;border:1px solid var(--line);background:var(--dbg,transparent);padding:0;cursor:pointer;--dbg:{{ d.bg }}"></button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--line)">
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+          <div onClick="{{ r.onTap }}" style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line);cursor:pointer;min-height:72px;box-sizing:border-box" style-hover="background:var(--tint)">
+            <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;background:var(--tint)">
+              <span style="font:700 20px/1 var(--fh);color:var(--accent)">{{ r.letter }}</span>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font:500 17px/1.15 var(--fb)">{{ r.name }}</div>
+              <div style="font:400 11.5px/1 var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">{{ r.date }}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font:600 20px/1 var(--fh);font-variant-numeric:tabular-nums">{{ r.price }}</div>
+              <div style="font:400 11px/1 var(--fb);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:6px">{{ r.cycle }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="height:26px"></div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isSettings }}">
+    <div>
+      <div style="padding:20px 18px 18px">
+        <div style="font:600 30px/1 var(--fh);letter-spacing:.01em;text-transform:uppercase">Settings</div>
+      </div>
+
+      <div style="padding:0 18px 8px;font:600 11px/1 var(--fh);letter-spacing:.18em;text-transform:uppercase;color:var(--accent)">Theme</div>
+      <div style="border-top:1px solid var(--line)">
+        <sc-for list="{{ themeRows }}" as="th" hint-placeholder-count="3">
+          <button onClick="{{ th.onPick }}" style="width:100%;display:flex;align-items:center;gap:16px;padding:0 18px;height:60px;background:var(--rbg,transparent);border:0;border-bottom:1px solid var(--line);color:var(--fg);cursor:pointer;text-align:left;--rbg:{{ th.bg }}">
+            <span style="width:20px;height:20px;flex:none;border:1px solid var(--accent);display:flex;align-items:center;justify-content:center">
+              <span style="width:10px;height:10px;background:var(--dot,transparent);--dot:{{ th.dot }}"></span>
+            </span>
+            <span style="font:500 17px/1 var(--fb)">{{ th.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="padding:24px 18px 8px;font:600 11px/1 var(--fh);letter-spacing:.18em;text-transform:uppercase;color:var(--accent)">Notifications</div>
+      <div style="border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;min-height:62px;box-sizing:border-box">
+          <span style="font:500 17px/1.2 var(--fb)">Enable notifications</span>
+          <button onClick="{{ toggleNotify }}" aria-label="Enable notifications" style="width:56px;height:30px;box-sizing:border-box;flex:none;border:1px solid var(--line);background:var(--tbg,transparent);padding:3px;display:flex;align-items:center;justify-content:var(--tjust,flex-start);cursor:pointer;--tbg:{{ notifySwitch.track }};--tjust:{{ notifySwitch.justify }}">
+            <span style="width:22px;height:22px;flex:none;background:var(--knob,var(--muted));--knob:{{ notifySwitch.knob }}"></span>
+          </button>
+        </div>
+      </div>
+
+      <div style="padding:26px 18px 30px;display:grid;gap:26px">
+        <div style="position:relative;border:1px solid var(--fieldLine,var(--line));--fieldLine:{{ daysField.line }}">
+          <span style="position:absolute;top:-7px;left:12px;padding:0 6px;background:var(--bg);font:600 10.5px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--fieldLabel,var(--muted));--fieldLabel:{{ daysField.label }}">Days before payment</span>
+          <div style="display:flex;align-items:center;height:60px">
+            <input value="{{ days }}" onChange="{{ onDays }}" onFocus="{{ focusDays }}" onBlur="{{ blurField }}" inputmode="numeric" style="flex:1;min-width:0;height:60px;background:transparent;border:0;color:var(--fg);font:500 18px/1 var(--fb);font-variant-numeric:tabular-nums;padding:0 14px;outline:none">
+            <span style="font:400 11px/1 var(--fb);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-right:14px">days</span>
+          </div>
+        </div>
+
+        <div style="position:relative;border:1px solid var(--fieldLine,var(--line));--fieldLine:{{ timeField.line }}">
+          <span style="position:absolute;top:-7px;left:12px;padding:0 6px;background:var(--bg);font:600 10.5px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--fieldLabel,var(--muted));--fieldLabel:{{ timeField.label }}">Reminder time</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;height:60px">
+            <span style="font:500 18px/1 var(--fb);font-variant-numeric:tabular-nums;padding-left:14px">{{ timeLabel }}</span>
+            <div style="display:flex;height:60px">
+              <button onClick="{{ timeDown }}" aria-label="Earlier" style="width:52px;background:transparent;border:0;border-left:1px solid var(--line);color:var(--fg);font:400 20px/1 var(--fh);cursor:pointer" style-hover="background:var(--tint)">−</button>
+              <button onClick="{{ timeUp }}" aria-label="Later" style="width:52px;background:transparent;border:0;border-left:1px solid var(--line);color:var(--fg);font:400 20px/1 var(--fh);cursor:pointer" style-hover="background:var(--tint)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isAdd }}">
+    <div>
+      <div style="padding:20px 18px 18px">
+        <div style="font:600 30px/1 var(--fh);letter-spacing:.01em;text-transform:uppercase">New Subscription</div>
+      </div>
+
+      <div style="padding:0 18px 24px;display:grid;gap:26px">
+
+        <div style="display:flex;gap:14px;align-items:stretch">
+          <button onClick="{{ cycleIcon }}" aria-label="Subscription icon" style="position:relative;width:84px;height:84px;flex:none;border:1px solid var(--line);background:var(--tint);color:var(--accent);cursor:pointer">
+            <span style="position:absolute;top:-6px;left:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></span>
+            <span style="position:absolute;bottom:-6px;right:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></span>
+            <span style="font:700 34px/1 var(--fh)">{{ iconLetter }}</span>
+          </button>
+          <div style="position:relative;flex:1;min-width:0;border:1px solid var(--fieldLine,var(--line));--fieldLine:{{ nameField.line }}">
+            <span style="position:absolute;top:-7px;left:12px;padding:0 6px;background:var(--bg);font:600 10.5px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--fieldLabel,var(--muted));--fieldLabel:{{ nameField.label }}">Name</span>
+            <input value="{{ name }}" onChange="{{ onName }}" onFocus="{{ focusName }}" placeholder="Netflix" style="width:100%;height:84px;box-sizing:border-box;background:transparent;border:0;color:var(--fg);font:500 18px/1 var(--fb);padding:0 14px;outline:none">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <button onClick="{{ openCurrency }}" style="position:relative;border:1px solid var(--fieldLine,var(--line));height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:transparent;color:var(--fg);cursor:pointer;text-align:left;--fieldLine:{{ curField.line }}">
+            <span style="position:absolute;top:-7px;left:12px;padding:0 6px;background:var(--bg);font:600 10.5px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--fieldLabel,var(--muted));--fieldLabel:{{ curField.label }}">Currency</span>
+            <span style="font:500 18px/1 var(--fb)">{{ currency }}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="opacity:.6"><path d="M6 9l6 6 6-6"></path></svg>
+          </button>
+          <div style="position:relative;border:1px solid var(--fieldLine,var(--line));--fieldLine:{{ priceField.line }}">
+            <span style="position:absolute;top:-7px;left:12px;padding:0 6px;background:var(--bg);font:600 10.5px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--fieldLabel,var(--muted));--fieldLabel:{{ priceField.label }}">Price</span>
+            <input value="{{ price }}" onChange="{{ onPrice }}" onFocus="{{ focusPrice }}" onBlur="{{ blurField }}" inputmode="decimal" placeholder="0.00" style="width:100%;height:60px;box-sizing:border-box;background:transparent;border:0;color:var(--fg);font:500 18px/1 var(--fb);font-variant-numeric:tabular-nums;padding:0 14px;outline:none">
+          </div>
+        </div>
+
+        <button onClick="{{ cyclePeriod }}" style="position:relative;border:1px solid var(--line);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:transparent;color:var(--fg);cursor:pointer;text-align:left">
+          <span style="position:absolute;top:-7px;left:12px;padding:0 6px;background:var(--bg);font:600 10.5px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Billing period</span>
+          <span style="font:500 18px/1 var(--fb)">{{ period }}</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="opacity:.6"><path d="M6 9l6 6 6-6"></path></svg>
+        </button>
+
+        <button onClick="{{ openDate }}" style="position:relative;border:1px solid var(--fieldLine,var(--line));height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:transparent;color:var(--fg);cursor:pointer;text-align:left;--fieldLine:{{ dateField.line }}">
+          <span style="position:absolute;top:-7px;left:12px;padding:0 6px;background:var(--bg);font:600 10.5px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--fieldLabel,var(--muted));--fieldLabel:{{ dateField.label }}">{{ dateFieldLabel }}</span>
+          <span style="font:500 18px/1 var(--fb)">{{ dateLabel }}</span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--accent)"><rect x="3" y="5" width="18" height="16"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        </button>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;min-height:62px;box-sizing:border-box">
+          <span style="font:500 17px/1.2 var(--fb)">Free trial</span>
+          <button onClick="{{ toggleTrial }}" aria-label="Free trial" style="width:56px;height:30px;box-sizing:border-box;flex:none;border:1px solid var(--line);background:var(--tbg,transparent);padding:3px;display:flex;align-items:center;justify-content:var(--tjust,flex-start);cursor:pointer;--tbg:{{ trialSwitch.track }};--tjust:{{ trialSwitch.justify }}">
+            <span style="width:22px;height:22px;flex:none;background:var(--knob,var(--muted));--knob:{{ trialSwitch.knob }}"></span>
+          </button>
+        </div>
+
+        <sc-if value="{{ trialOn }}">
+          <div style="display:grid;gap:22px;border-left:1px solid var(--accent);padding-left:14px;animation:pop .18s ease-out">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div>
+                <div style="position:relative;border:1px solid var(--fieldLine,var(--line));--fieldLine:{{ everyField.line }}">
+                  <span style="position:absolute;top:-7px;left:12px;padding:0 6px;background:var(--bg);font:600 10.5px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--fieldLabel,var(--muted));--fieldLabel:{{ everyField.label }}">Every</span>
+                  <input value="{{ every }}" onChange="{{ onEvery }}" onFocus="{{ focusEvery }}" onBlur="{{ blurField }}" inputmode="numeric" placeholder="0" style="width:100%;height:60px;box-sizing:border-box;background:transparent;border:0;color:var(--everyFg,var(--fg));font:500 18px/1 var(--fb);font-variant-numeric:tabular-nums;padding:0 14px;outline:none;--everyFg:{{ everyField.text }}">
+                </div>
+                <sc-if value="{{ everyError }}">
+                  <div style="font:400 11.5px/1.35 var(--fb);color:var(--errFg,var(--accent));margin-top:8px;--errFg:{{ t.error }}">Enter a number greater than 0</div>
+                </sc-if>
+              </div>
+              <button onClick="{{ cycleUnit }}" style="position:relative;border:1px solid var(--line);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:transparent;color:var(--fg);cursor:pointer;text-align:left">
+                <span style="position:absolute;top:-7px;left:12px;padding:0 6px;background:var(--bg);font:600 10.5px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Unit</span>
+                <span style="font:500 18px/1 var(--fb)">{{ unit }}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="opacity:.6"><path d="M6 9l6 6 6-6"></path></svg>
+              </button>
+            </div>
+            <div style="position:relative;border:1px solid var(--line)">
+              <span style="position:absolute;top:-7px;left:12px;padding:0 6px;background:var(--bg);font:600 10.5px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Trial price</span>
+              <input value="{{ trialPrice }}" onChange="{{ onTrialPrice }}" inputmode="decimal" style="width:100%;height:60px;box-sizing:border-box;background:transparent;border:0;color:var(--fg);font:500 18px/1 var(--fb);font-variant-numeric:tabular-nums;padding:0 14px;outline:none">
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line);padding:14px 0;min-height:62px;box-sizing:border-box">
+          <span style="font:500 17px/1.2 var(--fb)">Notify me before payment</span>
+          <button onClick="{{ toggleRemind }}" aria-label="Notify me before payment" style="width:56px;height:30px;box-sizing:border-box;flex:none;border:1px solid var(--line);background:var(--tbg,transparent);padding:3px;display:flex;align-items:center;justify-content:var(--tjust,flex-start);cursor:pointer;--tbg:{{ remindSwitch.track }};--tjust:{{ remindSwitch.justify }}">
+            <span style="width:22px;height:22px;flex:none;background:var(--knob,var(--muted));--knob:{{ remindSwitch.knob }}"></span>
+          </button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px">
+          <button onClick="{{ goList }}" style="height:58px;border:1px solid var(--line);background:transparent;color:var(--fg);font:600 14px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:var(--tint)">Cancel</button>
+          <button onClick="{{ save }}" style="position:relative;height:58px;border:0;background:var(--saveBg,var(--accent));color:var(--saveFg,var(--on-accent));font:600 14px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;cursor:var(--saveCur,pointer);--saveBg:{{ saveBtn.bg }};--saveFg:{{ saveBtn.fg }};--saveCur:{{ saveBtn.cursor }}">
+            <span style="position:absolute;top:-6px;right:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></span>
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ suggestOpen }}">
+    <div style="position:absolute;left:116px;right:18px;top:150px;bottom:96px;z-index:6;border:1px solid var(--line);background:var(--bg);box-shadow:0 18px 44px rgba(29,31,32,.24);overflow:auto;animation:pop .16s ease-out">
+      <sc-for list="{{ suggestions }}" as="s" hint-placeholder-count="8">
+        <button onClick="{{ s.onPick }}" style="width:100%;display:flex;align-items:center;gap:14px;padding:0 14px;height:56px;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--fg);cursor:pointer;text-align:left" style-hover="background:var(--tint)">
+          <span style="width:32px;height:32px;flex:none;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;background:var(--tint);font:700 15px/1 var(--fh);color:var(--accent)">{{ s.letter }}</span>
+          <span style="font:500 16px/1 var(--fb)">{{ s.name }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ currencyOpen }}">
+    <div style="position:absolute;left:18px;width:230px;top:266px;z-index:6;border:1px solid var(--line);background:var(--bg);box-shadow:0 18px 44px rgba(29,31,32,.24);max-height:330px;overflow:auto;animation:pop .16s ease-out">
+      <sc-for list="{{ currencies }}" as="c" hint-placeholder-count="6">
+        <button onClick="{{ c.onPick }}" style="width:100%;display:flex;align-items:baseline;gap:9px;padding:0 13px;height:54px;background:var(--cbg,transparent);border:0;border-bottom:1px solid var(--line);color:var(--fg);cursor:pointer;text-align:left;--cbg:{{ c.bg }}" style-hover="background:var(--tint)">
+          <span style="font:700 15px/1 var(--fh);letter-spacing:.06em;width:38px;flex:none">{{ c.code }}</span>
+          <span style="font:400 12.5px/1.2 var(--fb);color:var(--muted)">{{ c.name }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ dateOpen }}">
+    <div style="position:absolute;inset:0;z-index:8;background:rgba(29,31,32,.62);display:flex;align-items:center;justify-content:center;padding:18px">
+      <div style="position:relative;width:100%;border:1px solid var(--line);background:var(--bg);animation:pop .18s ease-out">
+        <div style="position:absolute;top:-6px;left:-6px;width:11px;height:11px;color:var(--accent);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></div>
+        <div style="position:absolute;bottom:-6px;right:-6px;width:11px;height:11px;color:var(--accent);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></div>
+        <div style="padding:16px 18px 18px;border-bottom:1px solid var(--line)">
+          <div style="font:600 11px/1 var(--fh);letter-spacing:.18em;text-transform:uppercase;color:var(--accent)">Select date</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+            <div style="font:600 34px/1 var(--fh);letter-spacing:-.01em">{{ dateLabel }}</div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.6"><path d="M4 20h4l10-10-4-4L4 16v4z"></path></svg>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px 10px 18px;border-bottom:1px solid var(--line)">
+          <div style="font:600 15px/1 var(--fh);letter-spacing:.08em;text-transform:uppercase">{{ monthLabel }}</div>
+          <div style="display:flex">
+            <button onClick="{{ monthBack }}" aria-label="Previous month" style="width:44px;height:44px;background:transparent;border:1px solid transparent;color:var(--fg);cursor:pointer" style-hover="border-color:var(--line)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M15 6l-6 6 6 6"></path></svg>
+            </button>
+            <button onClick="{{ monthFwd }}" aria-label="Next month" style="width:44px;height:44px;background:transparent;border:1px solid transparent;color:var(--fg);cursor:pointer" style-hover="border-color:var(--line)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:10px 10px 2px">
+          <sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="7">
+            <div style="height:26px;display:flex;align-items:center;justify-content:center;font:600 11px/1 var(--fh);letter-spacing:.08em;color:var(--muted)">{{ w.label }}</div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:2px 10px 12px">
+          <sc-for list="{{ dayCells }}" as="d" hint-placeholder-count="35">
+            <button onClick="{{ d.onPick }}" style="height:42px;background:var(--dbg,transparent);color:var(--dfg,var(--fg));border:1px solid var(--dborder,transparent);font:500 15px/1 var(--fb);font-variant-numeric:tabular-nums;cursor:var(--dcur,pointer);--dbg:{{ d.bg }};--dfg:{{ d.fg }};--dborder:{{ d.border }};--dcur:{{ d.cursor }}" style-hover="border-color:var(--line)">{{ d.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)">
+          <button onClick="{{ closeDate }}" style="height:54px;background:transparent;border:0;border-right:1px solid var(--line);color:var(--fg);font:600 13px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:var(--tint)">Cancel</button>
+          <button onClick="{{ confirmDate }}" style="height:54px;background:var(--accent);border:0;color:var(--on-accent);font:600 13px/1 var(--fh);letter-spacing:.14em;text-transform:uppercase;cursor:pointer">OK</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}">
+    <div style="padding:12px 18px;background:var(--accent);color:var(--on-accent);font:600 12px/1 var(--fh);letter-spacing:.12em;text-transform:uppercase">{{ toast }}</div>
+  </sc-if>
+
+  <div style="flex:none;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;border-top:1px solid var(--line);background:var(--bg);height:74px">
+    <button onClick="{{ goList }}" style="height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:transparent;border:0;color:var(--navList,var(--muted));cursor:pointer;--navList:{{ navList }}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+      <span style="font:600 10.5px/1 var(--fh);letter-spacing:.16em;text-transform:uppercase">List</span>
+    </button>
+    <div style="display:flex;align-items:center;justify-content:center">
+      <button onClick="{{ goAdd }}" aria-label="Add subscription" style="position:relative;width:56px;height:56px;display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--on-accent);border:0;cursor:pointer">
+        <span style="position:absolute;top:-6px;left:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></span>
+        <span style="position:absolute;top:-6px;right:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></span>
+        <span style="position:absolute;bottom:-6px;left:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></span>
+        <span style="position:absolute;bottom:-6px;right:-6px;width:11px;height:11px;color:var(--mark);background:linear-gradient(currentColor,currentColor) 5px 0/1px 11px no-repeat,linear-gradient(currentColor,currentColor) 0 5px/11px 1px no-repeat"></span>
+        <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      </button>
+    </div>
+    <button onClick="{{ goSettings }}" style="height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:transparent;border:0;color:var(--navSet,var(--muted));cursor:pointer;--navSet:{{ navSettings }}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h11M19 8h2M3 16h4M12 16h9"></path><rect x="14.3" y="5.7" width="4.6" height="4.6"></rect><rect x="7.3" y="13.7" width="4.6" height="4.6"></rect></svg>
+      <span style="font:600 10.5px/1 var(--fh);letter-spacing:.16em;text-transform:uppercase">Settings</span>
+    </button>
+  </div>
+</div>
+</x-import>
+</div>
+
+<div class="sc-opt" id="2b">
+<div class="sc-olabel"><a class="sc-oid" href="#2b">2b</a>What changed, element by element — the mapping I applied to every screen.</div>
+<div style="width:340px;border:1px solid rgba(29,31,32,.16);font:400 12px/1.45 'Barlow',sans-serif">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid rgba(29,31,32,.16);background:#eef6ff">
+    <div style="padding:9px 12px;font:600 10px/1 'Barlow Condensed',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#5980a6;border-right:1px solid rgba(29,31,32,.16)">Your build</div>
+    <div style="padding:9px 12px;font:600 10px/1 'Barlow Condensed',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#5980a6">Industry</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(29,31,32,.16)"><div style="padding:10px 12px;border-right:1px solid rgba(29,31,32,.16)">Purple #6750A4</div><div style="padding:10px 12px">Steel-blue #5980A6</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(29,31,32,.16)"><div style="padding:10px 12px;border-right:1px solid rgba(29,31,32,.16)">Filled cards, 20px radius</div><div style="padding:10px 12px">Square plates, hairline rules, corner ticks</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(29,31,32,.16)"><div style="padding:10px 12px;border-right:1px solid rgba(29,31,32,.16)">Roboto, sentence case</div><div style="padding:10px 12px">Barlow body, Barlow Condensed caps for labels</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(29,31,32,.16)"><div style="padding:10px 12px;border-right:1px solid rgba(29,31,32,.16)">Pill switches, round radios</div><div style="padding:10px 12px">Square track + square knob, square radio marks</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(29,31,32,.16)"><div style="padding:10px 12px;border-right:1px solid rgba(29,31,32,.16)">Brand logo tiles</div><div style="padding:10px 12px">Framed monogram tiles (real logos drop in unchanged)</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(29,31,32,.16)"><div style="padding:10px 12px;border-right:1px solid rgba(29,31,32,.16)">Row cards with gaps</div><div style="padding:10px 12px">Continuous 72px rows split by rules</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr"><div style="padding:10px 12px;border-right:1px solid rgba(29,31,32,.16)">Outlined fields, notched labels</div><div style="padding:10px 12px">Kept — the notch is already blueprint grammar</div></div>
+</div>
+</div>
+
+</div>
+<p class="sc-next">Try next: "put real brand logos in the tiles" · "restyle the empty list and the edit screen too" · "give me the dark version of all seven" · "tighten the form to fit without scrolling"</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#5980a6&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#5980a6&quot;,&quot;#2c455d&quot;,&quot;#416180&quot;,&quot;#728fab&quot;],&quot;section&quot;:&quot;Theme&quot;},&quot;systemDark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const LIGHT = {bg:'#f2f2f3', fg:'#1d1f20', muted:'rgba(29,31,32,.55)', line:'rgba(29,31,32,.16)',
+  tint:'#eef6ff', onAccent:'#f2f2f3', mark:'rgba(29,31,32,.55)', disabled:'rgba(29,31,32,.12)', error:'#9c4a3f'};
+const DARK = {bg:'#16191c', fg:'#e7e9ea', muted:'rgba(231,233,234,.55)', line:'rgba(231,233,234,.18)',
+  tint:'#1d2d3d', onAccent:'#16191c', mark:'rgba(231,233,234,.5)', disabled:'rgba(231,233,234,.14)', error:'#e08b7e'};
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WEEK = ['S','M','T','W','T','F','S'];
+const PERIODS = ['Monthly','Weekly','Quarterly','Yearly','Custom'];
+const UNITS = ['Days','Weeks','Months'];
+const SUGGESTIONS = ['Netflix','YouTube','Apple TV','Crunchyroll','Max','Spotify','Apple Music','YouTube Music','SoundCloud','TIDAL','Audible','Deezer','Google Drive'];
+const CURRENCIES = [['USD','US Dollar'],['JPY','Japanese Yen'],['EUR','Euro'],['UAH','Ukrainian Hryvnia'],['GBP','British Pound'],['ADP','Andorran Peseta']];
+const PAGES = [
+  {leftAmount:'800.00', leftCur:'UAH', rightAmount:'500.00', rightCur:'JPY'},
+  {leftAmount:'15.99', leftCur:'USD', rightAmount:'9.99', rightCur:'EUR'},
+  {leftAmount:'139.99', leftCur:'GBP', rightAmount:'0.00', rightCur:'PLN'},
+];
+const ROWS = [
+  {name:'Netflix', date:'Sep 5, 2026', price:'$ 15.99', cycle:'Monthly'},
+  {name:'Amazon Prime', date:'Sep 10, 2026', price:'¥ 500.00', cycle:'Monthly'},
+  {name:'Spotify', date:'Sep 12, 2026', price:'€ 9.99', cycle:'Monthly'},
+  {name:'Спортзал', date:'Sep 20, 2026', price:'UAH 1200.00', cycle:'Every 45 days'},
+  {name:'YouTube Premium', date:'Dec 31, 2026', price:'£ 139.99', cycle:'Yearly'},
+];
+
+class Component extends DCLogic {
+  state = {
+    screen: 'list', overlay: null, focus: null, page: 0,
+    theme: 'Light', notify: true, days: '3', minutes: 600,
+    name: '', currency: 'USD', price: '', period: 'Monthly',
+    date: {y: 2026, m: 8, d: 2}, viewM: 8, viewY: 2026, draft: null,
+    trialOn: false, every: '', unit: 'Days', trialPrice: '0', remind: true,
+    toast: '', iconStep: 0,
+    lgDark: false, lgScreen: 'list', lgEditId: 1, lgConfirm: null, lgUndo: null, lgToast: '',
+    lgTrial: false, lgRemind: true, lgPeriod: 'Monthly', lgCurrency: 'USD',
+    lgRows: [
+      {id: 1, name: 'Netflix', date: 'Sep 5, 2026', price: '$15.99', cycle: 'monthly', soon: false},
+      {id: 2, name: 'Amazon Prime', date: 'Sep 10, 2026', price: '¥500', cycle: 'monthly', soon: false},
+      {id: 3, name: 'Spotify', date: 'Sep 12, 2026', price: '€9.99', cycle: 'monthly', soon: false},
+      {id: 4, name: 'Спортзал', date: 'Sep 20, 2026', price: '₴1200', cycle: 'every 45 d', soon: true},
+      {id: 5, name: 'YouTube Premium', date: 'Dec 31, 2026', price: '£139.99', cycle: 'yearly', soon: false},
+    ],
+  };
+
+  lgDelete(id) {
+    const i = this.state.lgRows.findIndex(r => r.id === id);
+    if (i < 0) return;
+    const row = this.state.lgRows[i];
+    this.setState(st => ({
+      lgRows: st.lgRows.filter(r => r.id !== id),
+      lgUndo: {row, index: i}, lgConfirm: null, lgToast: row.name + ' deleted',
+      lgScreen: st.lgScreen === 'edit' ? 'list' : st.lgScreen,
+    }));
+    clearTimeout(this._lgT);
+    this._lgT = setTimeout(() => this.setState({lgToast: '', lgUndo: null}), 5000);
+  }
+
+  lgUndoDelete() {
+    const u = this.state.lgUndo;
+    if (!u) return;
+    clearTimeout(this._lgT);
+    this.setState(st => {
+      const rows = st.lgRows.slice();
+      rows.splice(u.index, 0, u.row);
+      return {lgRows: rows, lgUndo: null, lgToast: ''};
+    });
+  }
+
+  go(screen) { this.setState({screen, overlay: null, focus: null}); }
+  field(active, t, accent, err) {
+    if (err) return {line: t.error, label: t.error, text: t.error};
+    if (active) return {line: accent, label: accent, text: t.fg};
+    return {line: t.line, label: t.muted, text: t.fg};
+  }
+  sw(on, t, accent) {
+    return on ? {track: accent, knob: t.onAccent, justify: 'flex-end'}
+              : {track: 'transparent', knob: t.muted, justify: 'flex-start'};
+  }
+
+  renderVals() {
+    const accent = this.props.accent || '#5980a6';
+    const s = this.state;
+    const dark = s.theme === 'Dark' || (s.theme === 'System default' && !!this.props.systemDark);
+    const t = {...(dark ? DARK : LIGHT), accent};
+
+    const everyError = s.trialOn && s.every.trim() === '' && s.focus !== 'every';
+    const canSave = s.name.trim() !== '' && !(s.trialOn && s.every.trim() === '');
+
+    const d = s.draft || s.date;
+    const first = new Date(s.viewY, s.viewM, 1).getDay();
+    const len = new Date(s.viewY, s.viewM + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < first; i++) cells.push({key: 'b' + i, label: '', bg: 'transparent', fg: 'transparent', border: 'transparent', cursor: 'default', onPick: () => {}});
+    for (let n = 1; n <= len; n++) {
+      const sel = d.d === n && d.m === s.viewM && d.y === s.viewY;
+      cells.push({
+        key: 'd' + n, label: String(n),
+        bg: sel ? accent : 'transparent', fg: sel ? t.onAccent : t.fg,
+        border: sel ? accent : 'transparent', cursor: 'pointer',
+        onPick: () => this.setState({draft: {y: s.viewY, m: s.viewM, d: n}}),
+      });
+    }
+
+    const shown = s.overlay === 'date' ? d : s.date;
+    const dateLabel = MON[shown.m] + ' ' + shown.d + ', ' + shown.y;
+
+    const states = [
+      ['List', () => this.setState({screen: 'list', overlay: null, page: 0})],
+      ['Settings', () => this.go('settings')],
+      ['New', () => this.setState({screen: 'add', overlay: null, focus: null, trialOn: false, name: ''})],
+      ['Name list', () => this.setState({screen: 'add', overlay: 'names', focus: 'name'})],
+      ['Currency', () => this.setState({screen: 'add', overlay: 'currency', focus: 'currency'})],
+      ['Date picker', () => this.setState({screen: 'add', overlay: 'date', focus: 'date', draft: s.date, viewM: s.date.m, viewY: s.date.y})],
+      ['Trial + error', () => this.setState({screen: 'add', overlay: null, focus: null, trialOn: true, every: '', name: ''})],
+    ];
+    const activeState = s.screen === 'list' ? 'List' : s.screen === 'settings' ? 'Settings'
+      : s.overlay === 'names' ? 'Name list' : s.overlay === 'currency' ? 'Currency'
+      : s.overlay === 'date' ? 'Date picker' : s.trialOn ? 'Trial + error' : 'New';
+
+    const hh = String(Math.floor(s.minutes / 60)).padStart(2, '0');
+    const mm = String(s.minutes % 60).padStart(2, '0');
+
+    const L = s.lgDark
+      ? {bg:'#14161a', fg:'#f5f4f0', dim:'rgba(245,244,240,.5)', line:'rgba(245,244,240,.2)', rule:'rgba(245,244,240,.75)',
+         plateBg:'#f5f4f0', plateFg:'#14161a', accent:'#e0644d', onAccent:'#14161a', soft:'rgba(245,244,240,.08)'}
+      : {bg:'#f5f4f0', fg:'#14161a', dim:'rgba(20,22,26,.5)', line:'rgba(20,22,26,.18)', rule:'#14161a',
+         plateBg:'#14161a', plateFg:'#f5f4f0', accent:'#c2452f', onAccent:'#f5f4f0', soft:'rgba(20,22,26,.05)'};
+    const editRow = s.lgRows.find(r => r.id === s.lgEditId) || s.lgRows[0] || {name: '—', price: '', date: '', cycle: ''};
+    const confirmRow = s.lgRows.find(r => r.id === s.lgConfirm);
+    const lgTotal = s.lgRows.length;
+
+    return {
+      L,
+      lgDarkFrame: s.lgDark,
+      lgNavList: s.lgScreen === 'list' ? L.fg : L.dim,
+      lgIsList: s.lgScreen === 'list', lgIsEdit: s.lgScreen === 'edit',
+      lgThemeChips: [['Light', false], ['Dark', true]].map(([label, v]) => ({
+        key: label, label,
+        bg: s.lgDark === v ? '#14161a' : 'transparent',
+        fg: s.lgDark === v ? '#f5f4f0' : '#1d1f20',
+        onPick: () => this.setState({lgDark: v}),
+      })),
+      lgStateChips: [
+        ['List', () => this.setState({lgScreen: 'list', lgConfirm: null})],
+        ['Edit entry', () => this.setState({lgScreen: 'edit', lgEditId: s.lgRows.length ? s.lgRows[0].id : 1, lgConfirm: null})],
+        ['Confirm delete', () => this.setState({lgScreen: 'list', lgConfirm: s.lgRows.length ? s.lgRows[0].id : null})],
+      ].map(([label, fn]) => {
+        const active = (label === 'List' && s.lgScreen === 'list' && !s.lgConfirm)
+          || (label === 'Edit entry' && s.lgScreen === 'edit')
+          || (label === 'Confirm delete' && !!s.lgConfirm);
+        return {key: label, label, onPick: fn, bg: active ? '#c2452f' : 'transparent', fg: active ? '#f5f4f0' : '#1d1f20'};
+      }),
+      lgRows: s.lgRows.map(r => ({
+        ...r, key: r.id,
+        meta: r.date.replace(', 2026', '') + ' · ' + r.cycle,
+        metaColor: r.soon ? L.accent : L.dim,
+        onTap: () => this.setState({lgScreen: 'edit', lgEditId: r.id}),
+        onDelete: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({lgConfirm: r.id}); },
+      })),
+      lgCount: lgTotal + (lgTotal === 1 ? ' active entry' : ' active entries'),
+      lgEmpty: lgTotal === 0,
+      lgEdit: editRow,
+      lgEditLetter: (editRow.name || '?').charAt(0).toUpperCase(),
+      lgCurrency: s.lgCurrency, lgPeriod: s.lgPeriod,
+      lgCyclePeriod: () => this.setState({lgPeriod: PERIODS[(PERIODS.indexOf(s.lgPeriod) + 1) % PERIODS.length]}),
+      lgTrialSwitch: s.lgTrial
+        ? {track: L.accent, knob: L.onAccent, justify: 'flex-end'}
+        : {track: 'transparent', knob: L.dim, justify: 'flex-start'},
+      lgRemindSwitch: s.lgRemind
+        ? {track: L.accent, knob: L.onAccent, justify: 'flex-end'}
+        : {track: 'transparent', knob: L.dim, justify: 'flex-start'},
+      lgToggleTrial: () => this.setState(st => ({lgTrial: !st.lgTrial})),
+      lgToggleRemind: () => this.setState(st => ({lgRemind: !st.lgRemind})),
+      lgGoList: () => this.setState({lgScreen: 'list', lgConfirm: null}),
+      lgGoNew: () => this.setState({lgScreen: 'edit', lgEditId: 0, lgConfirm: null}),
+      lgAskDelete: () => this.setState({lgConfirm: editRow.id}),
+      lgConfirmOpen: !!confirmRow,
+      lgConfirmName: confirmRow ? confirmRow.name : '',
+      lgConfirmPrice: confirmRow ? confirmRow.price + ' · ' + confirmRow.cycle : '',
+      lgCancelDelete: () => this.setState({lgConfirm: null}),
+      lgDoDelete: () => this.lgDelete(s.lgConfirm),
+      lgToast: s.lgToast,
+      lgUndoable: !!s.lgUndo,
+      lgUndoDelete: () => this.lgUndoDelete(),
+
+      t, dark,
+      stateChips: states.map(([label, fn]) => ({
+        label, onPick: fn,
+        bg: activeState === label ? accent : 'transparent',
+        fg: activeState === label ? '#f2f2f3' : '#1d1f20',
+      })),
+
+      isList: s.screen === 'list', isAdd: s.screen === 'add', isSettings: s.screen === 'settings',
+      goList: () => this.go('list'), goAdd: () => this.go('add'), goSettings: () => this.go('settings'),
+      navList: s.screen === 'list' ? accent : t.muted,
+      navSettings: s.screen === 'settings' ? accent : t.muted,
+      toast: s.toast,
+
+      page: PAGES[s.page],
+      pagerDots: PAGES.map((p, i) => ({key: i, bg: i === s.page ? accent : 'transparent', onPick: () => this.setState({page: i})})),
+      rows: ROWS.map((r, i) => ({...r, key: i, letter: r.name.charAt(0).toUpperCase(), onTap: () => this.setState({screen: 'add', name: r.name, overlay: null})})),
+
+      themeRows: ['Light', 'Dark', 'System default'].map(label => ({
+        label, key: label,
+        dot: s.theme === label ? accent : 'transparent',
+        bg: s.theme === label ? t.tint : 'transparent',
+        onPick: () => this.setState({theme: label}),
+      })),
+      notifySwitch: this.sw(s.notify, t, accent),
+      toggleNotify: () => this.setState(st => ({notify: !st.notify})),
+      days: s.days,
+      onDays: e => this.setState({days: e.target.value.replace(/[^0-9]/g, '')}),
+      focusDays: () => this.setState({focus: 'days'}),
+      blurField: () => this.setState({focus: null}),
+      daysField: this.field(s.focus === 'days', t, accent),
+      timeField: this.field(s.focus === 'time', t, accent),
+      timeLabel: hh + ':' + mm,
+      timeUp: () => this.setState(st => ({minutes: Math.min(1410, st.minutes + 30), focus: 'time'})),
+      timeDown: () => this.setState(st => ({minutes: Math.max(0, st.minutes - 30), focus: 'time'})),
+
+      name: s.name,
+      iconLetter: s.name.trim() ? s.name.trim().charAt(0).toUpperCase() : '?',
+      cycleIcon: () => this.setState(st => ({iconStep: st.iconStep + 1})),
+      onName: e => this.setState({name: e.target.value, overlay: e.target.value ? null : 'names'}),
+      focusName: () => this.setState({focus: 'name', overlay: 'names'}),
+      nameField: this.field(s.focus === 'name', t, accent),
+      suggestOpen: s.overlay === 'names',
+      suggestions: SUGGESTIONS.map(n => ({
+        key: n, name: n, letter: n.charAt(0).toUpperCase(),
+        onPick: () => this.setState({name: n, overlay: null, focus: null}),
+      })),
+
+      currency: s.currency,
+      curField: this.field(s.focus === 'currency', t, accent),
+      openCurrency: () => this.setState({overlay: s.overlay === 'currency' ? null : 'currency', focus: 'currency'}),
+      currencyOpen: s.overlay === 'currency',
+      currencies: CURRENCIES.map(([code, name]) => ({
+        key: code, code, name,
+        bg: code === s.currency ? t.tint : 'transparent',
+        onPick: () => this.setState({currency: code, overlay: null, focus: null}),
+      })),
+
+      price: s.price,
+      onPrice: e => this.setState({price: e.target.value.replace(/[^0-9.]/g, '')}),
+      focusPrice: () => this.setState({focus: 'price'}),
+      priceField: this.field(s.focus === 'price', t, accent),
+
+      period: s.period,
+      cyclePeriod: () => this.setState({period: PERIODS[(PERIODS.indexOf(s.period) + 1) % PERIODS.length]}),
+
+      dateLabel,
+      dateFieldLabel: s.trialOn ? 'Trial start date' : 'Next payment date',
+      dateField: this.field(s.focus === 'date' || s.trialOn, t, accent),
+      openDate: () => this.setState({overlay: 'date', focus: 'date', draft: s.date, viewM: s.date.m, viewY: s.date.y}),
+      dateOpen: s.overlay === 'date',
+      closeDate: () => this.setState({overlay: null, focus: null, draft: null}),
+      confirmDate: () => this.setState({date: d, overlay: null, focus: null, draft: null}),
+      monthLabel: MONTHS[s.viewM] + ' ' + s.viewY,
+      monthBack: () => this.setState(st => ({viewM: st.viewM === 0 ? 11 : st.viewM - 1, viewY: st.viewM === 0 ? st.viewY - 1 : st.viewY})),
+      monthFwd: () => this.setState(st => ({viewM: st.viewM === 11 ? 0 : st.viewM + 1, viewY: st.viewM === 11 ? st.viewY + 1 : st.viewY})),
+      weekdays: WEEK.map((w, i) => ({key: i, label: w})),
+      dayCells: cells,
+
+      trialOn: s.trialOn,
+      trialSwitch: this.sw(s.trialOn, t, accent),
+      toggleTrial: () => this.setState(st => ({trialOn: !st.trialOn})),
+      every: s.every,
+      onEvery: e => this.setState({every: e.target.value.replace(/[^0-9]/g, '')}),
+      focusEvery: () => this.setState({focus: 'every'}),
+      everyError,
+      everyField: this.field(s.focus === 'every', t, accent, everyError),
+      unit: s.unit,
+      cycleUnit: () => this.setState({unit: UNITS[(UNITS.indexOf(s.unit) + 1) % UNITS.length]}),
+      trialPrice: s.trialPrice,
+      onTrialPrice: e => this.setState({trialPrice: e.target.value.replace(/[^0-9.]/g, '')}),
+
+      remindSwitch: this.sw(s.remind, t, accent),
+      toggleRemind: () => this.setState(st => ({remind: !st.remind})),
+
+      saveBtn: canSave ? {bg: accent, fg: t.onAccent, cursor: 'pointer'} : {bg: t.disabled, fg: t.muted, cursor: 'not-allowed'},
+      save: () => {
+        if (!canSave) return;
+        this.setState({screen: 'list', overlay: null, focus: null, toast: s.name.trim() + ' saved'});
+        clearTimeout(this._t);
+        this._t = setTimeout(() => this.setState({toast: ''}), 2400);
+      },
+    };
+  }
+
+  componentWillUnmount() { clearTimeout(this._t); clearTimeout(this._lgT); }
+}
+
+</script>
+</body>
+</html>

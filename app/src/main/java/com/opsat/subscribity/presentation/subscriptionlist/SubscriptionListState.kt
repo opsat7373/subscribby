@@ -17,6 +17,8 @@ data class SubscriptionListItemUiModel(
     val nextPaymentDateLabel: String,
     val priceLabel: String,
     val periodLabel: String,
+    val isDueSoon: Boolean,
+    val isCustomCycle: Boolean,
 )
 
-data class SpendingSummaryItemUiModel(val amountLabel: String)
+data class SpendingSummaryItemUiModel(val amount: String, val currencyCode: String)

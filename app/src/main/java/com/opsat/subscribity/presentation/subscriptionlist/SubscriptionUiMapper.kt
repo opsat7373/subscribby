@@ -8,10 +8,14 @@ import com.opsat.subscribity.presentation.common.currencySymbol
 import com.opsat.subscribity.presentation.common.customPeriodText
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+
+/** Presentation-only "due soon" heuristic for the list's accent highlight — unrelated to the real reminder setting. */
+private const val DueSoonWindowDays = 3L
 
 fun Subscription.toUiModel(): SubscriptionListItemUiModel = SubscriptionListItemUiModel(
     id = id,
@@ -22,10 +26,12 @@ fun Subscription.toUiModel(): SubscriptionListItemUiModel = SubscriptionListItem
     nextPaymentDateLabel = nextPaymentDate.format(dateFormatter),
     priceLabel = formatPrice(price, currency),
     periodLabel = period.toLabel(),
+    isDueSoon = !nextPaymentDate.isAfter(LocalDate.now().plusDays(DueSoonWindowDays)),
+    isCustomCycle = period is BillingPeriod.Custom,
 )
 
 fun CurrencySpending.toUiModel(): SpendingSummaryItemUiModel =
-    SpendingSummaryItemUiModel(amountLabel = "${monthlyTotal.toPlainString()} ${currencySymbol(currency)}")
+    SpendingSummaryItemUiModel(amount = monthlyTotal.toPlainString(), currencyCode = currencySymbol(currency))
 
 private fun formatPrice(price: BigDecimal, currency: CurrencyCode): String =
     "${currencySymbol(currency)} ${price.setScale(2, RoundingMode.HALF_UP)}"

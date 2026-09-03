@@ -12,45 +12,31 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val LightColors = lightColorScheme(
-    primary = LightPrimary,
-    onPrimary = LightOnPrimary,
-    primaryContainer = LightPrimaryContainer,
-    onPrimaryContainer = LightOnPrimaryContainer,
-    secondary = LightSecondary,
-    onSecondary = LightOnSecondary,
-    secondaryContainer = LightSecondaryContainer,
-    onSecondaryContainer = LightOnSecondaryContainer,
-    tertiary = LightTertiary,
-    onTertiary = LightOnTertiary,
-    tertiaryContainer = LightTertiaryContainer,
-    onTertiaryContainer = LightOnTertiaryContainer,
-    background = LightBackground,
-    onBackground = LightOnBackground,
-    surface = LightSurface,
-    onSurface = LightOnSurface,
-    surfaceVariant = LightSurfaceVariant,
-    onSurfaceVariant = LightOnSurfaceVariant,
+    background = PaperLight,
+    onBackground = InkLight,
+    surface = PaperLight,
+    onSurface = InkLight,
+    outline = InkLight,
+    onSurfaceVariant = InkLight50,
+    outlineVariant = InkLight18,
+    primary = AccentInkRed,
+    onPrimary = OnAccentLight,
+    tertiary = AccentBrightLight,
+    surfaceVariant = InkLight5,
 )
 
 private val DarkColors = darkColorScheme(
-    primary = DarkPrimary,
-    onPrimary = DarkOnPrimary,
-    primaryContainer = DarkPrimaryContainer,
-    onPrimaryContainer = DarkOnPrimaryContainer,
-    secondary = DarkSecondary,
-    onSecondary = DarkOnSecondary,
-    secondaryContainer = DarkSecondaryContainer,
-    onSecondaryContainer = DarkOnSecondaryContainer,
-    tertiary = DarkTertiary,
-    onTertiary = DarkOnTertiary,
-    tertiaryContainer = DarkTertiaryContainer,
-    onTertiaryContainer = DarkOnTertiaryContainer,
-    background = DarkBackground,
-    onBackground = DarkOnBackground,
-    surface = DarkSurface,
-    onSurface = DarkOnSurface,
-    surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = DarkOnSurfaceVariant,
+    background = GroundDark,
+    onBackground = TextDark,
+    surface = GroundDark,
+    onSurface = TextDark,
+    outline = TextDark,
+    onSurfaceVariant = TextDark50,
+    outlineVariant = HairlineDark20,
+    primary = AccentDark,
+    onPrimary = OnAccentDark,
+    tertiary = AccentDark,
+    surfaceVariant = SoftFillDark8,
 )
 
 @Composable
@@ -66,5 +52,5 @@ fun SubscribityTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Compo
         }
     }
 
-    MaterialTheme(colorScheme = colorScheme, content = content)
+    MaterialTheme(colorScheme = colorScheme, shapes = LedgerShapes, typography = LedgerTypography, content = content)
 }

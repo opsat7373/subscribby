@@ -26,7 +26,7 @@ class SubscriptionListScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Subscriptions List").assertIsDisplayed()
+        composeTestRule.onNodeWithText("SUBSCRIPTIONS").assertIsDisplayed()
         items.forEach { item ->
             composeTestRule.onNodeWithText(item.name).assertIsDisplayed()
             composeTestRule.onNodeWithText(item.priceLabel).assertIsDisplayed()
